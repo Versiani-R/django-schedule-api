@@ -9,6 +9,10 @@
 <body>
     <h1 id="title">Dr4kk0nnys' Api Inc.</h1>
 
+    {% if error_message %}
+        <h2 style="color: red">{{ error_message }}</h2>
+    {% endif %}
+
     <form action="{% url 'schedule' %}" method="post">
         {% csrf_token %}
 
@@ -20,7 +24,11 @@
         <div id="time-div">
             <label for="hour">Hour : Minutes</label>
             <input type="number" id="hour" name="hours" required min="8" max="18" placeholder="Hours">
-            <input type="number" id="minutes" name="minutes" required min="1" max="59" placeholder="Minutes">
+            <select name="minutes" id="minutes">
+                <option value="00">00</option>
+                <option value="30">30</option>
+            </select>
+<!--            <input type="number" id="minutes" name="minutes" required min="1" max="59" placeholder="Minutes">-->
         </div>
 
         <button>Schedule meeting</button>

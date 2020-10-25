@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Failed to Schedule</title>
+</head>
+<body>
+    <h1>Error!</h1>
+
+    <!-- Error code 1: Date, hours or minutes empty   -->
+    {% if error_code == 1 %}
+        <h2>Date or Hours or Minutes must not be empty!</h2>
+
+    <!-- Error code 2: Schedule to a saturday or a sunday   -->
+    {% elif error_code == 2 %}
+        <h2>Cannot schedule a meeting to Saturday or Sunday!</h2>
+
+    <!-- Error code 3: Schedule to the past   -->
+    {% elif error_code == 3 %}
+        <h2>Cannot schedule a meeting to the past!</h2>
+
+    {% endif %}
+</body>
+</html>

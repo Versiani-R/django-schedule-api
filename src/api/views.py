@@ -1,8 +1,9 @@
-from django.shortcuts import render
-from django.http import HttpResponse
+from django.shortcuts import render, redirect
+from django.http import HttpResponse, HttpResponseRedirect
 from datetime import datetime
 
 # TODO: Add a view to check which days and hours are already booked
+# TODO: Refactor the code ( there are functions that do way too much stuff )
 
 
 def index(request):
@@ -19,15 +20,12 @@ def api_detail(request, day=1, month=2, year=2000):
     return HttpResponse('Hello! This is the detail page!')
 
 
-# TODO: Check if day, month and year are valid
-# TODO: Check if the meeting is in the future
+# TODO: Check if hour
 # TODO: Redirect if success
-# TODO: Raise 404 if no scheduled meeting with this date found
 def api_schedule(request):
     # Standard checks
     if ('date' and 'hours' and 'minutes') not in request.POST:
-        # TODO: handle error
-        pass
+        return redirect('schedule_error', error_code=1)
 
     """
     Date is a html input, whose type is 'date'
@@ -59,22 +57,18 @@ def api_schedule(request):
     # monday = 0, tuesday = 1, ..., saturday = 5, sunday = 6
     datetime_weekday = datetime.weekday(datetime_object)
     if datetime_weekday >= 5:
-        # TODO: Handle error
-        pass
+        return redirect('schedule_error', error_code=2)
 
     # Check if the meeting was scheduled to the past
     current_date = datetime.now()
 
-    # TODO: Change to >
     if current_date > datetime_object:  # AKA, if it's in the past
-        # TODO: Handle error
-        print(current_date, datetime_object)
-        print('Current_date is bigger than datetime_object')
-        pass
+        return redirect('schedule_error', error_code=3)
+
+    # TODO: Check if schedule day and hour is available
 
     return HttpResponse(f'{day}/{month}/{year} {hours}:{minutes} {datetime_weekday}')
-    # return render(request, 'api/schedule.html')
 
 
-def api_schedule_success(request):
-    pass
+def api_error(request, error_code):
+    return render(request, 'api/schedule_error.html', {'error_code': error_code})
