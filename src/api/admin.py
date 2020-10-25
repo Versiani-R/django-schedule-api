@@ -1,3 +1,12 @@
+"""
+Pass for the admin:
+1- +*+ 5
+"""
+
+
 from django.contrib import admin
 
-# Register your models here.
+from .models import ScheduledDate
+
+
+admin.site.register(ScheduledDate)

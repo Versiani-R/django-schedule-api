@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <title>Api Index</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'api/index_style.css' %}">
+</head>
+<body>
+    <h1 id="title">Dr4kk0nnys' Api Inc.</h1>
+
+    <h1 id="news-title">News</h1>
+
+    <form action="{% url 'test' %}" method="post">
+        {% csrf_token %}
+
+        <select name="number_test">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+        </select>
+
+        <button>Show deals</button>
+    </form>
+
+    <ul>
+        <a href="#">
+            <li>New Api for Scheduling tasks!</li>
+        </a>
+
+        <a href="https://github.com/Dr4kk0nnys/django-schedule-api" target="_blank">
+            <li>Project on github</li>
+        </a>
+    </ul>
+
+    <h1><a href="api/">Check API</a></h1>
+</body>
+</html>
