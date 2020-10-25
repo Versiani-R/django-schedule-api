@@ -9,15 +9,24 @@
 <body>
     <h1 id="title">Dr4kk0nnys' Api Inc.</h1>
 
-    <h1 id="news-title">News</h1>
-
-    <form action="{% url 'test' %}" method="post">
+    <form action="{% url 'schedule' %}" method="post">
         {% csrf_token %}
 
-        <input type="number" name="number_test">
+        <div id="date-div">
+            <label for="date">Date</label>
+            <input type="date" required id="date" name="date">
+        </div>
 
-        <button>Show deals</button>
+        <div id="time-div">
+            <label for="hour">Hour : Minutes</label>
+            <input type="number" id="hour" name="hours" required min="8" max="18" placeholder="Hours">
+            <input type="number" id="minutes" name="minutes" required min="1" max="59" placeholder="Minutes">
+        </div>
+
+        <button>Schedule meeting</button>
     </form>
+
+    <h1 id="news-title">News</h1>
 
     <ul>
         <li>
