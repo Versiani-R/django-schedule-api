@@ -14,23 +14,23 @@
     <form action="{% url 'test' %}" method="post">
         {% csrf_token %}
 
-        <select name="number_test">
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-        </select>
+        <input type="number" name="number_test">
 
         <button>Show deals</button>
     </form>
 
     <ul>
-        <a href="#">
-            <li>New Api for Scheduling tasks!</li>
-        </a>
+        <li>
+            <a href="#">
+                New Api for Scheduling tasks!
+            </a>
+        </li>
 
-        <a href="https://github.com/Dr4kk0nnys/django-schedule-api" target="_blank">
-            <li>Project on github</li>
-        </a>
+        <li>
+            <a href="https://github.com/Dr4kk0nnys/django-schedule-api" target="_blank">
+                Project on github.
+            </a>
+        </li>
     </ul>
 
     <h1><a href="api/">Check API</a></h1>

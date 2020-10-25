@@ -19,6 +19,7 @@ def api_detail(request, day=1, month=2, year=2000):
 
 
 # TODO: Check if day, month and year are valid
+# TODO: Redirect if success
 # TODO: Raise 404 if no scheduled meeting with this date found
 def api_schedule(request, day=1, month=2, year=2000):
     context = {
@@ -31,5 +32,14 @@ def api_schedule(request, day=1, month=2, year=2000):
     return render(request, 'api/schedule.html', context)
 
 
+def api_schedule_success(request):
+    pass
+
+
 def test(request):
-    return HttpResponse(f'Test')
+    """
+    Handle the post request
+    HttpRedirect
+    """
+    number_test = request.POST['number_test']
+    return HttpResponse(f'Test {number_test}')
