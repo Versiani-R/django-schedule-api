@@ -145,10 +145,20 @@ def api_schedule(request):
             if sanitized_scheduled_time == sanitized_datetime_object[1]:
                 return redirect('schedule_error', error_code=4)
 
-    current_timezone = timezone.get_current_timezone()
-    timezone_aware_date = current_timezone.localize(datetime_object)
+    """
+    No more need to keep track of current time zone.
+    Since USE_TZ is now set to False, and the timezone code
+    is correct ('America/Sao_Paulo'), there isn't need to
+    make the datetime object aware.
+    
+    The code will remain commented for knowledge sake. 
+    """
+    # current_timezone = timezone.get_current_timezone()
+    # print(f'Current timezone: {current_timezone}')
+    # timezone_aware_date = current_timezone.localize(datetime_object)
+    # print(f'Timezone aware date: {timezone_aware_date}')
 
-    new_meeting = ScheduledDate.objects.get_or_create(date=timezone_aware_date, name=post_request['company_name'])
+    new_meeting = ScheduledDate.objects.get_or_create(date=datetime_object, name=post_request['company_name'])
     print(new_meeting)
 
     return redirect(

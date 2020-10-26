@@ -37,15 +37,12 @@ def create_scheduled_date():
     datetime_string = 'Oct 25 2066 16:20'
     datetime_object = datetime.strptime(datetime_string, '%b %d %Y %H:%M')
 
-    current_timezone = timezone.get_current_timezone()
-    timezone_aware_date = current_timezone.localize(datetime_object)
-
     company_name = 'Dr4kk0 Inc.'
 
     # making sure it was created
-    ScheduledDate.objects.get_or_create(date=timezone_aware_date, name=company_name)
+    ScheduledDate.objects.get_or_create(date=datetime_object, name=company_name)
 
-    new_scheduled_date = ScheduledDate.objects.get_or_create(date=timezone_aware_date, name=company_name)
+    new_scheduled_date = ScheduledDate.objects.get_or_create(date=datetime_object, name=company_name)
 
     return new_scheduled_date
 
