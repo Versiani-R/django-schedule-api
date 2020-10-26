@@ -87,8 +87,6 @@ def api_schedule(request):
     datetime_string = f'{months[int(post_request["month"]) - 1]} {post_request["day"]} {post_request["year"]} ' \
                       f'{post_request["hours"]}:{post_request["minutes"]}'
 
-    print(datetime_string)
-
     # passing all the variables to a datetime object
     datetime_object = datetime.strptime(datetime_string, '%b %d %Y %H:%M')
 

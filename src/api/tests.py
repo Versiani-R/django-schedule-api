@@ -42,7 +42,7 @@ def create_scheduled_date():
 
     company_name = 'Dr4kk0 Inc.'
 
-    # making sure it was created, if it wasn't on the database already
+    # making sure it was created
     ScheduledDate.objects.get_or_create(date=timezone_aware_date, name=company_name)
 
     new_scheduled_date = ScheduledDate.objects.get_or_create(date=timezone_aware_date, name=company_name)
