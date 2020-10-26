@@ -7,7 +7,13 @@ from datetime import datetime
 from .models import ScheduledDate
 
 
+# TODO: Make it possible to have up to 5 schedules at the same time
+# TODO: Use F() to increment values
+# TODO: Use
+
+
 def index(request):
+    print(check_admin(request.user))
     return render(request, 'api/index.html')
 
 
@@ -80,6 +86,8 @@ def api_schedule(request):
     # months[int(month) - 1] -> months is 0-based while month is not
     datetime_string = f'{months[int(post_request["month"]) - 1]} {post_request["day"]} {post_request["year"]} ' \
                       f'{post_request["hours"]}:{post_request["minutes"]}'
+
+    print(datetime_string)
 
     # passing all the variables to a datetime object
     datetime_object = datetime.strptime(datetime_string, '%b %d %Y %H:%M')
