@@ -110,10 +110,10 @@ def api_schedule(request):
     if current_date > datetime_object:  # AKA, if it's in the past
         return redirect('schedule_error', error_code=3)
 
-    """ Check 2: Check if day and hour is available ( no scheduled meeting for the date and time )
+    """ Check 3: Check if day and hour is available ( no scheduled meeting for the date and time )
     
     Retrieve all the scheduled_dates from the database and compare with the datetime_object.
-    If a match on the day is found, it checks for the hour, if a match occurs, then they're scheduled for the same time.
+    If a match on the day is found, it checks for the time, if a match occurs, then they're scheduled for the same time.
     
     sanitized_scheduled_date[0] is the same as the date, it looks like this:
         * sanitized_scheduled_date[0]:  '2020-10-29'
@@ -124,7 +124,7 @@ def api_schedule(request):
         * sanitized_datetime_object[1]: '12:00:00'
         
     **Note**: Since the user can only schedule a meeting on either 0 or 30 minutes, it's really not necessary to check
-    for hours and only after that, minutes. That's why the time itself is compared, and not hours, and only then 
+    for hours and only after that, minutes. That's why the time itself is compared, and not hours, and only then, 
     minutes.
     """
     scheduled_dates = ScheduledDate.objects.all()
@@ -137,6 +137,10 @@ def api_schedule(request):
         # Both sanitized dates have the same format: year-month-day
         # checking to see if they are in the same day, if so, check for the hour
         # if the hour is the same, check for the minutes, if the minutes are the same
+
+        # TODO: If the minutes are the same, check for the count number
+        # TODO: If the count number is greater than or equals 5, raise error
+        # TODO: If the count number is smaller than 5, increase it, and continue the logic.
         # it cannot be added, since there are already a meeting scheduled to that time
         if sanitized_scheduled_date[0] == sanitized_datetime_object[0]:
             sanitized_scheduled_time = str(scheduled_date).split(' ')[1].split('+')[0]
