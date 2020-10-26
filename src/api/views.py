@@ -6,7 +6,7 @@ from datetime import datetime
 
 from .models import ScheduledDate
 
-# TODO: Add a view to check which days and hours are already booked
+# TODO: Add a view to check which days and hours are already booked ( admin only )
 # TODO: Refactor the code ( there are functions that do way too much stuff )
 
 
@@ -15,7 +15,7 @@ def index(request):
 
 
 def api_index(request):
-    return HttpResponse('Hello! You are at the /api/ index!')
+    return render(request, 'api/api.html')
 
 
 # TODO: Implement a detail all ?
