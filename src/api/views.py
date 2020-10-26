@@ -6,7 +6,6 @@ from datetime import datetime
 
 from .models import ScheduledDate
 
-from operator import itemgetter
 
 # TODO: Add a view to check which days and hours are already booked ( admin only )
 # TODO: Refactor the code ( there are functions that do way too much stuff )
@@ -141,12 +140,13 @@ def api_schedule(request):
             if sanitized_scheduled_time == sanitized_datetime_object[1]:
                 return redirect('schedule_error', error_code=4)
 
-    # TODO: Avoid race-condition
     current_timezone = timezone.get_current_timezone()
     timezone_aware_date = current_timezone.localize(datetime_object)
 
-    new_scheduled_meeting = ScheduledDate(date=timezone_aware_date, name=post_request["company_name"])
-    new_scheduled_meeting.save()
+    # TODO: Avoid race-condition
+
+    new_meeting = ScheduledDate.objects.get_or_create(date=timezone_aware_date, name=post_request['company_name'])
+    print(new_meeting)
 
     return redirect(
         'schedule_success',
