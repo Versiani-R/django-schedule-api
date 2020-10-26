@@ -1,14 +1,10 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
 from django.utils import timezone
+from django.contrib.auth.decorators import user_passes_test
 
 from datetime import datetime
 
 from .models import ScheduledDate
-
-
-# TODO: Add a view to check which days and hours are already booked ( admin only )
-# TODO: Refactor the code ( there are functions that do way too much stuff )
 
 
 def index(request):
@@ -19,10 +15,13 @@ def api_index(request):
     return render(request, 'api/api.html')
 
 
-# TODO: Implement a detail all ?
-# TODO: Implement an id parameter ?
-def api_detail(request, day=1, month=2, year=2000):
-    return HttpResponse('Hello! This is the detail page!')
+def check_admin(user):
+    return user.is_superuser
+
+
+@user_passes_test(check_admin)
+def api_detail(request):
+    return render(request, 'api/detail.html', {'scheduled_meetings': ScheduledDate.objects.all()})
 
 
 def handle_request_post_data_to_api_schedule(request):
@@ -143,8 +142,6 @@ def api_schedule(request):
     current_timezone = timezone.get_current_timezone()
     timezone_aware_date = current_timezone.localize(datetime_object)
 
-    # TODO: Avoid race-condition
-
     new_meeting = ScheduledDate.objects.get_or_create(date=timezone_aware_date, name=post_request['company_name'])
     print(new_meeting)
 
@@ -172,5 +169,3 @@ def api_success(request, day, month, year, hours, minutes, company_name):
         'minutes': minutes,
         'company_name': company_name
     })
-
-

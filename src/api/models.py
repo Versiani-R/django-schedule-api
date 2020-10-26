@@ -14,8 +14,7 @@ class ScheduledDate(models.Model):
     date = models.DateTimeField('scheduled meeting')
     name = models.CharField(max_length=200)
 
+    objects = models.Manager()
+
     def __str__(self):
         return str(self.date)
-
-    def was_published_recently(self):
-        return self.date >= timezone.now() - datetime.timedelta(days=1)
