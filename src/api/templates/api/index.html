@@ -1,45 +1,40 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
 <head>
-    {% load static %}
     <meta charset="UTF-8">
     <title>Api Index</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'api/index_style.css' %}">
+    <link rel="stylesheet" href="{% static 'api/style.css' %}">
 </head>
 <body>
     <h1 id="title">Dr4kk0nnys' Api Inc.</h1>
-
-    {% if error_message %}
-        <h2 style="color: red">{{ error_message }}</h2>
-    {% endif %}
 
     <form action="{% url 'schedule' %}" method="post">
         {% csrf_token %}
 
         <div id="date-div">
-            <label for="date">Date</label>
+            <label for="date">Date:</label>
             <input type="date" required id="date" name="date">
         </div>
 
         <div id="time-div">
-            <label for="hour">Hour : Minutes</label>
+            <label for="hour">Hour : Minutes:</label>
             <input type="number" id="hour" name="hours" required min="8" max="18" placeholder="Hours">
             <select name="minutes" id="minutes">
                 <option value="00">00</option>
                 <option value="30">30</option>
             </select>
-<!--            <input type="number" id="minutes" name="minutes" required min="1" max="59" placeholder="Minutes">-->
         </div>
 
         <div id="name-div">
-            <label for="name">Name of your company</label>
+            <label for="name">Company's Name:</label>
             <input type="text" id="name" name="name" required placeholder="Name">
         </div>
 
-        <button>Schedule meeting</button>
+        <button class="myButton">Schedule meeting</button>
     </form>
 
-    <h1 id="news-title">News</h1>
+    <h1 id="news">News</h1>
 
     <ul>
         <li>

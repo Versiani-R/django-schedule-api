@@ -1,0 +1,64 @@
+#title {
+    text-align: center;
+    font-size: 50px;
+    margin-bottom: 50px;
+}
+
+div {
+    font-size: 30px;
+}
+
+input {
+    font-size: 20px;
+}
+
+#date {
+    margin-left: 158px;
+}
+
+#hour {
+    margin-left: 31.5px;
+    padding-top: 4px;
+    width: 200px;
+    text-align: center;
+}
+
+#name {
+    margin-left: 2px;
+    width: 200px;
+    padding-top: 4px;
+}
+
+select {
+    font-size: 25px;
+}
+
+button {
+    margin-top: 20px;
+    margin-left: 240px;
+}
+
+.myButton {
+	background-color:#44c767;
+	border-radius:25px;
+	border:1px solid #18ab29;
+	display:inline-block;
+	cursor:pointer;
+	color:#ffffff;
+	font-family:Arial;
+	font-size:15px;
+	padding:15px 30px;
+	text-decoration:none;
+	text-shadow:0px 1px 0px #2f6627;
+}
+.myButton:hover {
+	background-color:#5cbf2a;
+}
+.myButton:active {
+	position:relative;
+	top:1px;
+}
+
+#news {
+    margin-top: 250px;
+}
