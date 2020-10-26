@@ -19,9 +19,9 @@
     {% elif error_code == 3 %}
         <h2>Cannot schedule a meeting to the past!</h2>
 
-    <!-- Error code 4: Meeting already scheduled to the day and hour  -->
+    <!-- Error code 4: Number of meetings scheduled to the day and hour is over 5 -->
     {% elif error_code == 4 %}
-        <h2>Cannot schedule a meeting since there is a meeting already scheduled to this time and day.</h2>
+        <h2>Cannot schedule a meeting since the number of meetings already scheduled to this time and day is superior than 5.</h2>
 
     {% endif %}
 </body>

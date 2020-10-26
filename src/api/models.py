@@ -12,7 +12,7 @@ class ScheduledDate(models.Model):
     Date: day/month/year
     """
     date = models.DateTimeField('scheduled meeting')
-    count = models.IntegerField(default=0)
+    count = models.IntegerField(default=1)
     name = models.CharField(max_length=200)
 
     objects = models.Manager()

@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.utils import timezone
+from django.db.models import F
 from django.contrib.auth.decorators import user_passes_test
 
 from datetime import datetime
@@ -7,9 +7,13 @@ from datetime import datetime
 from .models import ScheduledDate
 
 
-# TODO: Make it possible to have up to 5 schedules at the same time
-# TODO: Use F() to increment values
-# TODO: Use
+# TODO: Bug check
+# TODO: Update your tests ( 1 is falling )
+# TODO: Check for mistakes in your code
+# TODO: Check every possible case of the code
+# TODO: Create tests for the new code
+
+# TODO: Implement the logic of 5 doctors on the morning, and 3 on the afternoon
 
 
 def index(request):
@@ -131,6 +135,9 @@ def api_schedule(request):
 
     sanitized_datetime_object = str(datetime_object).split(' ')
 
+    # TODO: Document the count variable
+    count = 1
+
     for scheduled_date in scheduled_dates:
         sanitized_scheduled_date = str(scheduled_date).split(' ')
 
@@ -141,13 +148,34 @@ def api_schedule(request):
         # TODO: If the minutes are the same, check for the count number
         # TODO: If the count number is greater than or equals 5, raise error
         # TODO: If the count number is smaller than 5, increase it, and continue the logic.
-        # it cannot be added, since there are already a meeting scheduled to that time
+
+        # if they're on the same day
         if sanitized_scheduled_date[0] == sanitized_datetime_object[0]:
             sanitized_scheduled_time = str(scheduled_date).split(' ')[1].split('+')[0]
 
-            # Cannot schedule a meeting, because there is a meeting already scheduled
+            # print(f'Sanitized scheduled date: {sanitized_scheduled_date}')
+            # print(f'Sanitized datetime_object: {sanitized_datetime_object}')
+
+            # if they're on the same time ( both hours, and minutes )
             if sanitized_scheduled_time == sanitized_datetime_object[1]:
-                return redirect('schedule_error', error_code=4)
+
+                # count_value_db is the count value retrieved through the database itself
+                count_value_db = ScheduledDate.objects.select_for_update().get(date=datetime_object)
+
+                # if less than 5 people already scheduled to this time
+                if count_value_db.count < 5:
+                    # increment the value of count for organization sake
+                    count = count_value_db.count + 1
+
+                    # schedule normally
+                    count_value_db.count = F('count') + 1
+                    count_value_db.save()
+
+                    # print(f'Count value is: {count}')
+                    # print(f'Count class is: {type(count)}')
+
+                else:
+                    return redirect('schedule_error', error_code=4)
 
     """
     No more need to keep track of current time zone.
@@ -162,8 +190,17 @@ def api_schedule(request):
     # timezone_aware_date = current_timezone.localize(datetime_object)
     # print(f'Timezone aware date: {timezone_aware_date}')
 
-    new_meeting = ScheduledDate.objects.get_or_create(date=datetime_object, name=post_request['company_name'])
-    print(new_meeting)
+    # TODO: To keep using get or create you must pass the count value as a parameter
+    # TODO: And to pass the count value as a parameter, you must get it first, and update it.
+    # TODO: And to update it you must confirm the value is less than 5
+
+    new_meeting = ScheduledDate.objects.get_or_create(
+        date=datetime_object,
+        name=post_request['company_name'],
+        count=count
+    )
+
+    print(f'New meeting: {new_meeting}')
 
     return redirect(
         'schedule_success',
