@@ -12,6 +12,7 @@ class ScheduledDate(models.Model):
     Date: day/month/year
     """
     date = models.DateTimeField('scheduled meeting')
+    name = models.CharField(max_length=200)
 
     def __str__(self):
         return str(self.date)

@@ -24,11 +24,9 @@ def api_detail(request, day=1, month=2, year=2000):
     return HttpResponse('Hello! This is the detail page!')
 
 
-# TODO: Check if hour
-# TODO: Redirect if success
 def api_schedule(request):
     # Standard checks
-    if ('date' and 'hours' and 'minutes') not in request.POST:
+    if ('date' and 'hours' and 'minutes' and 'name') not in request.POST:
         return redirect('schedule_error', error_code=1)
 
     """
@@ -47,6 +45,9 @@ def api_schedule(request):
     [day, month, year] = [date.split('-')[-i] for i in range(1, 4)]
     hours = request.POST['hours']
     minutes = request.POST['minutes']
+
+    # name of the company for organization's sake
+    company_name = request.POST['name']
 
     # Check if the meeting was scheduled to a saturday/sunday
     months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -69,7 +70,7 @@ def api_schedule(request):
     if current_date > datetime_object:  # AKA, if it's in the past
         return redirect('schedule_error', error_code=3)
 
-    # TODO: Check if schedule day and hour is available
+    # Check if day and hour is available ( no scheduled meeting for the date and time )
     scheduled_dates = ScheduledDate.objects.all()
 
     sanitized_datetime_object = str(datetime_object).split(' ')
@@ -93,19 +94,36 @@ def api_schedule(request):
             if sanitized_scheduled_time == sanitized_datetime_object[1]:
                 return redirect('schedule_error', error_code=4)
 
-    # TODO: Redirect
     # TODO: Revise the names of the variables
     # TODO: Avoid race-condition
     current_timezone = timezone.get_current_timezone()
     timezone_aware_date = current_timezone.localize(datetime_object)
 
-    new_aware_scheduled_meeting = ScheduledDate(date=timezone_aware_date)
+    new_aware_scheduled_meeting = ScheduledDate(date=timezone_aware_date, name=company_name)
     new_aware_scheduled_meeting.save()
 
-    print(new_aware_scheduled_meeting.id)
-
-    return HttpResponse(f'{day}/{month}/{year} {hours}:{minutes} {datetime_weekday}')
+    return redirect(
+        'schedule_success',
+        day=day,
+        month=month,
+        year=year,
+        hours=hours,
+        minutes=minutes,
+        name=company_name
+    )
 
 
 def api_error(request, error_code):
     return render(request, 'api/schedule_error.html', {'error_code': error_code})
+
+
+def api_success(request, day, month, year, hours, minutes, name):
+    return render(request, 'api/schedule_success.html', {
+        'day': day,
+        'month': month,
+        'year': year,
+        'hours': hours,
+        'minutes': minutes,
+        'name': name,
+    })
+

@@ -9,4 +9,6 @@ urlpatterns = [
     path('api/detail/<int:day>-<int:month>-<int:year>/', views.api_detail, name='detail'),
     path('api/schedule/', views.api_schedule, name='schedule'),
     path('api/error/<int:error_code>/', views.api_error, name='schedule_error'),
+    path('api/success/<int:day>-<int:month>-<int:year>/<int:hours>-<int:minutes>/<str:name>/', views.api_success,
+         name='schedule_success'),
 ]
