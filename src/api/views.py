@@ -7,10 +7,6 @@ from datetime import datetime
 from .models import ScheduledDate
 
 
-# TODO: Update your tests ( 1 is falling )
-# TODO: Check every possible case of the code
-# TODO: Create tests for the new code
-
 # TODO: Create pyautogui test for the multiple request at the same time
 
 # TODO: Implement the logic of 5 doctors on the morning, and 3 on the afternoon
