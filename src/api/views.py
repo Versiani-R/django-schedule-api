@@ -9,8 +9,6 @@ from .models import ScheduledDate
 
 # TODO: Create pyautogui test for the multiple request at the same time
 
-# TODO: Implement the logic of 5 doctors on the morning, and 3 on the afternoon
-
 
 def index(request):
     return render(request, 'api/index.html')
@@ -127,7 +125,7 @@ def is_meeting_scheduled_time_available(datetime_object):
             * sanitized_datetime_object[0]: '2020-10-29'
 
         sanitized_scheduled_date[1] is the same as the time, it looks like this:
-            * sanitized_scheduled_date[1]:  '12:00:00'
+            * sanitized_scheduled_time:  '12:00:00'
             * sanitized_datetime_object[1]: '12:00:00'
 
         **Note**: Since the user can only schedule a meeting on either 0 or 30 minutes, it's really not necessary to check
@@ -172,8 +170,14 @@ def is_meeting_scheduled_time_available(datetime_object):
                 # database_object is the object value retrieved through the database itself
                 database_object = ScheduledDate.objects.select_for_update().get(date=datetime_object)
 
-                # if less than 5 people already scheduled to this time, schedule it normally
-                if database_object.count < 5:
+                count = 3
+                if sanitized_datetime_object[1] <= '11:30:00':
+                    count = 5
+
+                # if less than {count} people already scheduled to this time, schedule it normally
+                if database_object.count < count:
+                    print(f'Count value is: {count}')
+                    print(f'Sanitized datetime object is: {sanitized_datetime_object[1]}')
                     return True, database_object
 
                 else:
