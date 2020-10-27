@@ -1,7 +1,5 @@
-from django.utils import timezone
 from django.db import models
-
-import datetime
+from django
 
 
 # Command to  add new migrations: python manage.py makemigrations api
@@ -13,7 +11,7 @@ class ScheduledDate(models.Model):
     """
     date = models.DateTimeField('scheduled meeting')
     count = models.IntegerField(default=1)
-    name = models.CharField(max_length=200)
+    name = models.List(max_length=200)
 
     objects = models.Manager()
 

@@ -13,11 +13,14 @@ from .models import ScheduledDate
 # TODO: Check every possible case of the code
 # TODO: Create tests for the new code
 
+# TODO: Name should be renamed Names, and passed as an array, since it can hold multiple names
+
+# TODO: Create pyautogui test for the multiple request at the same time
+
 # TODO: Implement the logic of 5 doctors on the morning, and 3 on the afternoon
 
 
 def index(request):
-    print(check_admin(request.user))
     return render(request, 'api/index.html')
 
 
