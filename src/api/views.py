@@ -197,7 +197,7 @@ def api_schedule(request):
     """
     if was_meeting_scheduled_to_a_saturday_or_sunday(datetime_object):
         return redirect('schedule_error', error_code=2)
-    elif was_meeting_scheduled_to_the_past(datetime_object):
+    if was_meeting_scheduled_to_the_past(datetime_object):
         return redirect('schedule_error', error_code=3)
 
     try:
@@ -217,6 +217,7 @@ def api_schedule(request):
         ScheduledDate.objects.get_or_create(date=datetime_object)
         database_object = ScheduledDate.objects.select_for_update().get(date=datetime_object)
         database_object.name_set.create(name=post_request['company_name'])
+        database_object.save()
 
     """
     No more need to keep track of current time zone.
