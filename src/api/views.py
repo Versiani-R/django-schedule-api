@@ -64,68 +64,76 @@ def handle_request_post_data_to_api_schedule(request):
     }
 
 
-def api_schedule(request):
-
-    post_request = handle_request_post_data_to_api_schedule(request)
-
-    """ Check 1: Checking if the meeting was scheduled to a saturday or to a sunday.
-    
-    The month variable is not 0 index ( html values ... ).
-    Because of that, datetime_string has to consider the month value, and subtract 1.
-    ( months[int(post_request["month"]) - 1] ).
-    
-    All those datetime variables were created in order to check the day of the date object passed through the html.
-    datetime.weekday requires a datetime object and returns an integer.
-    This integer is the 0-index-based value of the days of the week.
-    So, monday = 0, tuesday = 1, ... saturday = 5, sunday = 6.
-    Then, it simply checks if the datetime_weekday variable is greater than 5, if so, it's either a saturday or sunday.
-    """
-    months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-
-    # months[int(month) - 1] -> months is 0-based while month is not
+def convert_datetime_string_to_datetime_object(post_request, months):
     datetime_string = f'{months[int(post_request["month"]) - 1]} {post_request["day"]} {post_request["year"]} ' \
                       f'{post_request["hours"]}:{post_request["minutes"]}'
 
     # passing all the variables to a datetime object
     datetime_object = datetime.strptime(datetime_string, '%b %d %Y %H:%M')
 
+    return datetime_object
+
+
+def was_meeting_scheduled_to_a_saturday_or_sunday(datetime_object):
+    """ Check 1: Checking if the meeting was scheduled to a saturday or to a sunday.
+
+    The month variable is not 0 index ( html values ... ).
+    Because of that, datetime_string has to consider the month value, and subtract 1.
+    ( months[int(post_request["month"]) - 1] ).
+
+    All those datetime variables were created in order to check the day of the date object passed through the html.
+    datetime.weekday requires a datetime object and returns an integer.
+    This integer is the 0-index-based value of the days of the week.
+    So, monday = 0, tuesday = 1, ... saturday = 5, sunday = 6.
+    Then, it simply checks if the datetime_weekday variable is greater than 5, if so, it's either a saturday or sunday.
+    """
+
     # get the week day of the datetime_object date
     # monday = 0, tuesday = 1, ..., saturday = 5, sunday = 6
     datetime_weekday = datetime.weekday(datetime_object)
-    if datetime_weekday >= 5:
-        return redirect('schedule_error', error_code=2)
 
+    if datetime_weekday >= 5:
+        return True
+
+    return False
+
+
+def was_meeting_scheduled_to_the_past(datetime_object):
     """ Check 2: Check if the meeting was scheduled to the past
-    
-    It takes usage of the datetime_object previously created to check 1.
-    
-    Datetime objects in general are 'weird'. The newer it is, the greater it is.
-    So, a datetime object for like '2006 Jun 12 13:30PM' is smaller than '2012 Jun 12 13:30PM'.
-    With that in mind, we check for the current date (datetime.now()) and compare with the datetime object.
-    If the current date is greater than the datetime_object, the datetime_object is in the past.
-    """
+
+        It takes usage of the datetime_object previously created to check 1.
+
+        Datetime objects in general are 'weird'. The newer it is, the greater it is.
+        So, a datetime object for like '2006 Jun 12 13:30PM' is smaller than '2012 Jun 12 13:30PM'.
+        With that in mind, we check for the current date (datetime.now()) and compare with the datetime object.
+        If the current date is greater than the datetime_object, the datetime_object is in the past.
+        """
     current_date = datetime.now()
 
     if current_date > datetime_object:  # AKA, if it's in the past
-        return redirect('schedule_error', error_code=3)
+        return True
 
+    return False
+
+
+def is_meeting_scheduled_time_available(datetime_object):
     """ Check 3: Check if day and hour is available, and then check if there's no over than 5 meetings scheduled.
-    
-    Retrieve all the scheduled_dates from the database and compare with the datetime_object.
-    If a match on the day is found, it checks for the time, if a match occurs, then they're scheduled for the same time.
-    
-    sanitized_scheduled_date[0] is the same as the date, it looks like this:
-        * sanitized_scheduled_date[0]:  '2020-10-29'
-        * sanitized_datetime_object[0]: '2020-10-29'
-    
-    sanitized_scheduled_date[1] is the same as the time, it looks like this:
-        * sanitized_scheduled_date[1]:  '12:00:00'
-        * sanitized_datetime_object[1]: '12:00:00'
-        
-    **Note**: Since the user can only schedule a meeting on either 0 or 30 minutes, it's really not necessary to check
-    for hours and only after that, minutes. That's why the time itself is compared, and not hours, and only then, 
-    minutes.
-    """
+
+        Retrieve all the scheduled_dates from the database and compare with the datetime_object.
+        If a match on the day is found, it checks for the time, if a match occurs, then they're scheduled for the same time.
+
+        sanitized_scheduled_date[0] is the same as the date, it looks like this:
+            * sanitized_scheduled_date[0]:  '2020-10-29'
+            * sanitized_datetime_object[0]: '2020-10-29'
+
+        sanitized_scheduled_date[1] is the same as the time, it looks like this:
+            * sanitized_scheduled_date[1]:  '12:00:00'
+            * sanitized_datetime_object[1]: '12:00:00'
+
+        **Note**: Since the user can only schedule a meeting on either 0 or 30 minutes, it's really not necessary to check
+        for hours and only after that, minutes. That's why the time itself is compared, and not hours, and only then,
+        minutes.
+        """
     scheduled_dates = ScheduledDate.objects.all()
 
     sanitized_datetime_object = str(datetime_object).split(' ')
@@ -135,16 +143,16 @@ def api_schedule(request):
 
         """
         * Check if the 5 doctors logic is correct
-        
+
         Both sanitized dates have the same format: year-month-day.
         Check for the day, if they're on the same day, check for the time.
         If they're on the same time, check for the database_object.count value.
-        
+
         The business rule here is:
             * This 'count' value cannot be greater than 5.
-        
+
         If the value is smaller than or equals 4, we can add one more schedule.
-        
+
         **Note**: The whole code should be race-condition-issue free.
         **Note**: The database_object is the value retrieved from the database itself. 
             What does that mean ?
@@ -164,16 +172,51 @@ def api_schedule(request):
                 # database_object is the object value retrieved through the database itself
                 database_object = ScheduledDate.objects.select_for_update().get(date=datetime_object)
 
-                # if less than 5 people already scheduled to this time
+                # if less than 5 people already scheduled to this time, schedule it normally
                 if database_object.count < 5:
-
-                    # schedule normally
-                    database_object.count = F('count') + 1
-                    database_object.name_set.create(name=post_request['company_name'])
-                    database_object.save()
+                    return True, database_object
 
                 else:
-                    return redirect('schedule_error', error_code=4)
+                    return False, database_object
+
+
+def api_schedule(request):
+
+    post_request = handle_request_post_data_to_api_schedule(request)
+
+    datetime_object = convert_datetime_string_to_datetime_object(post_request, months=[
+            'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+        ]
+    )
+
+    """
+    For documentation of the following checks, please refer to the comments on the functions:
+        * was_meeting_scheduled_to_a_saturday_or_sunday
+        * was_meeting_scheduled_to_the_past
+        * is_meeting_scheduled_time_available
+    """
+    if was_meeting_scheduled_to_a_saturday_or_sunday(datetime_object):
+        return redirect('schedule_error', error_code=2)
+    elif was_meeting_scheduled_to_the_past(datetime_object):
+        return redirect('schedule_error', error_code=3)
+
+    try:
+        (is_available, database_object) = is_meeting_scheduled_time_available(datetime_object)
+
+        if is_available:
+            database_object.count = F('count') + 1
+            database_object.name_set.create(name=post_request['company_name'])
+            database_object.save()
+        else:
+            return redirect('schedule_error', error_code=4)
+    except TypeError:
+        """
+        TypeError occurs when the database_object is empty ( nothing on the database )
+        If that's the case, we need to create a brand new object to an empty database.
+        """
+        ScheduledDate.objects.get_or_create(date=datetime_object)
+        database_object = ScheduledDate.objects.select_for_update().get(date=datetime_object)
+        database_object.name_set.create(name=post_request['company_name'])
 
     """
     No more need to keep track of current time zone.
@@ -187,35 +230,6 @@ def api_schedule(request):
     # print(f'Current timezone: {current_timezone}')
     # timezone_aware_date = current_timezone.localize(datetime_object)
     # print(f'Timezone aware date: {timezone_aware_date}')
-
-    """ Check 5: Check if meeting was scheduled, if it wasn't, scheduled it.
-    
-    This code is quite tricky, let's go slow
-    
-    ! ScheduledDate.objects.get_or_create(date=datetime_object)[1]:
-        * It checks if the object (datetime_object) is already in the database
-        * The function returns a tuple with the following values: 
-            (date object, boolean value)
-            
-            1. Date object
-                It returns the value of the date, if it was already in the database, it returns the value from the
-                database. If the value wasn't in the database already ( brand new object ), it returns the brand new
-                object. In this case, the brand new object is the variable 'datetime_object'
-            2. Boolean value
-                The boolean value is just the confirmation if the value was on the database or not:
-                
-                False: The value is already in the database ( in this case it doesn't enter the if statement and just
-                goes to the return redirect(...) statement.
-                
-                True: The value wasn't on the database ( it is a brand new object ), if so, the object lacks a name.
-                So, inside the if statement, we add a name to it.
-                
-                **Note**: Notice how we're using the select_for_update() function. Because we're of course, avoiding
-                race-condition situations.    
-    """
-    if ScheduledDate.objects.get_or_create(date=datetime_object)[1]:
-        database_object = ScheduledDate.objects.select_for_update().get(date=datetime_object)
-        database_object.name_set.create(name=post_request['company_name'])
 
     return redirect(
         'schedule_success',
