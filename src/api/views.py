@@ -117,7 +117,7 @@ def api_schedule(request):
     if current_date > datetime_object:  # AKA, if it's in the past
         return redirect('schedule_error', error_code=3)
 
-    """ Check 3: Check if day and hour is available ( no scheduled meeting for the date and time )
+    """ Check 3: Check if day and hour is available, and then check if there's no over than 5 meetings scheduled.
     
     Retrieve all the scheduled_dates from the database and compare with the datetime_object.
     If a match on the day is found, it checks for the time, if a match occurs, then they're scheduled for the same time.
@@ -141,20 +141,30 @@ def api_schedule(request):
     for scheduled_date in scheduled_dates:
         sanitized_scheduled_date = str(scheduled_date).split(' ')
 
-        # Both sanitized dates have the same format: year-month-day
-        # checking to see if they are in the same day, if so, check for the hour
-        # if the hour is the same, check for the minutes, if the minutes are the same
-
-        # TODO: If the minutes are the same, check for the count number
-        # TODO: If the count number is greater than or equals 5, raise error
-        # TODO: If the count number is smaller than 5, increase it, and continue the logic.
-
+        """
+        * Check if the 5 doctors logic is correct
+        
+        Both sanitized dates have the same format: year-month-day.
+        Check for the day, if they're on the same day, check for the time.
+        If they're on the same time, check for the database_object.count value.
+        
+        The business rule here is:
+            * This 'count' value cannot be greater than 5.
+        
+        If the value is smaller than or equals 4, we can add one more schedule.
+        
+        **Note**: The whole code should be race-condition-issue free.
+        **Note**: The database_object is the value retrieved from the database itself. 
+            What does that mean ?
+            It means that the select_for_update() freezes the database for the transaction.
+                * Again, it should be race-condition-issue free. 
+            We then increase the count value ( number of meetings scheduled )
+            Push the name of the business name ( Company Name ) to the array of names in the database.
+            We then save it, closing the 'freeze' time.
+        """
         # if they're on the same day
         if sanitized_scheduled_date[0] == sanitized_datetime_object[0]:
             sanitized_scheduled_time = str(scheduled_date).split(' ')[1].split('+')[0]
-
-            # print(f'Sanitized scheduled date: {sanitized_scheduled_date}')
-            # print(f'Sanitized datetime_object: {sanitized_datetime_object}')
 
             # if they're on the same time ( both hours, and minutes )
             if sanitized_scheduled_time == sanitized_datetime_object[1]:
@@ -164,16 +174,11 @@ def api_schedule(request):
 
                 # if less than 5 people already scheduled to this time
                 if database_object.count < 5:
-                    # increment the value of count for organization sake
-                    count = database_object.count + 1
 
                     # schedule normally
                     database_object.count = F('count') + 1
                     database_object.name_set.create(name=post_request['company_name'])
                     database_object.save()
-
-                    # print(f'Count value is: {count}')
-                    # print(f'Count class is: {type(count)}')
 
                 else:
                     return redirect('schedule_error', error_code=4)
