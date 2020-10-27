@@ -1,5 +1,4 @@
 from django.db import models
-from django
 
 
 # Command to  add new migrations: python manage.py makemigrations api
@@ -11,9 +10,16 @@ class ScheduledDate(models.Model):
     """
     date = models.DateTimeField('scheduled meeting')
     count = models.IntegerField(default=1)
-    name = models.List(max_length=200)
 
     objects = models.Manager()
 
     def __str__(self):
         return str(self.date)
+
+
+class Name(models.Model):
+    scheduled_date = models.ForeignKey(ScheduledDate, on_delete=models.CASCADE)
+    name = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.name

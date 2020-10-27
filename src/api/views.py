@@ -138,9 +138,6 @@ def api_schedule(request):
 
     sanitized_datetime_object = str(datetime_object).split(' ')
 
-    # TODO: Document the count variable
-    count = 1
-
     for scheduled_date in scheduled_dates:
         sanitized_scheduled_date = str(scheduled_date).split(' ')
 
@@ -162,17 +159,18 @@ def api_schedule(request):
             # if they're on the same time ( both hours, and minutes )
             if sanitized_scheduled_time == sanitized_datetime_object[1]:
 
-                # count_value_db is the count value retrieved through the database itself
-                count_value_db = ScheduledDate.objects.select_for_update().get(date=datetime_object)
+                # database_object is the object value retrieved through the database itself
+                database_object = ScheduledDate.objects.select_for_update().get(date=datetime_object)
 
                 # if less than 5 people already scheduled to this time
-                if count_value_db.count < 5:
+                if database_object.count < 5:
                     # increment the value of count for organization sake
-                    count = count_value_db.count + 1
+                    count = database_object.count + 1
 
                     # schedule normally
-                    count_value_db.count = F('count') + 1
-                    count_value_db.save()
+                    database_object.count = F('count') + 1
+                    database_object.name_set.create(name=post_request['company_name'])
+                    database_object.save()
 
                     # print(f'Count value is: {count}')
                     # print(f'Count class is: {type(count)}')
@@ -193,17 +191,34 @@ def api_schedule(request):
     # timezone_aware_date = current_timezone.localize(datetime_object)
     # print(f'Timezone aware date: {timezone_aware_date}')
 
-    # TODO: To keep using get or create you must pass the count value as a parameter
-    # TODO: And to pass the count value as a parameter, you must get it first, and update it.
-    # TODO: And to update it you must confirm the value is less than 5
-
-    new_meeting = ScheduledDate.objects.get_or_create(
-        date=datetime_object,
-        name=post_request['company_name'],
-        count=count
-    )
-
-    print(f'New meeting: {new_meeting}')
+    """ Check 5: Check if meeting was scheduled, if it wasn't, scheduled it.
+    
+    This code is quite tricky, let's go slow
+    
+    ! ScheduledDate.objects.get_or_create(date=datetime_object)[1]:
+        * It checks if the object (datetime_object) is already in the database
+        * The function returns a tuple with the following values: 
+            (date object, boolean value)
+            
+            1. Date object
+                It returns the value of the date, if it was already in the database, it returns the value from the
+                database. If the value wasn't in the database already ( brand new object ), it returns the brand new
+                object. In this case, the brand new object is the variable 'datetime_object'
+            2. Boolean value
+                The boolean value is just the confirmation if the value was on the database or not:
+                
+                False: The value is already in the database ( in this case it doesn't enter the if statement and just
+                goes to the return redirect(...) statement.
+                
+                True: The value wasn't on the database ( it is a brand new object ), if so, the object lacks a name.
+                So, inside the if statement, we add a name to it.
+                
+                **Note**: Notice how we're using the select_for_update() function. Because we're of course, avoiding
+                race-condition situations.    
+    """
+    if ScheduledDate.objects.get_or_create(date=datetime_object)[1]:
+        database_object = ScheduledDate.objects.select_for_update().get(date=datetime_object)
+        database_object.name_set.create(name=post_request['company_name'])
 
     return redirect(
         'schedule_success',
