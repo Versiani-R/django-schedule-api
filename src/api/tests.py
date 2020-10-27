@@ -1,8 +1,5 @@
 from django.test import TestCase
 from django.test.client import Client
-
-from django.utils import timezone
-
 from django.contrib.auth.models import User
 
 from datetime import datetime
@@ -76,6 +73,33 @@ def update_scheduled_date():
     return scheduled_date_object
 
 
+def get_response_object_before_11_30():
+    return {
+        'date': '2065-10-28',
+        'hours': 10,
+        'minutes': 20,
+        'name': 'Dr4kk0 Inc.'
+    }
+
+
+def get_response_object_at_11_30():
+    return {
+        'date': '2065-10-28',
+        'hours': 11,
+        'minutes': 30,
+        'name': 'Dr4kk0 Inc.'
+    }
+
+
+def get_response_object_after_11_30():
+    return {
+        'date': '2065-10-28',
+        'hours': 16,
+        'minutes': 20,
+        'name': 'Dr4kk0 Inc.'
+    }
+
+
 class CheckRequestHandleTests(TestCase):
     def test_handle_request_data_with_saturday_date_value(self):
         """
@@ -133,22 +157,82 @@ class CheckRequestHandleTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, '/api/success/25-10-2066/16-20/Dr4kk0%20Inc./')
 
-    def test_handle_post_request_data_with_five_scheduled_values(self):
-        """
+    def test_handle_post_request_data_with_five_scheduled_values_before_11_30(self):
+        """ Old logic ( following old business rule )
         5 post requests with a date that is already scheduled
         should redirect the user to /api/success/
         """
 
+        """ New logic ( following current business rule )
+        5 post requests with a date that is already scheduled
+        and the time is less than or equals 11:30 should
+        redirect the user to /api/success/
+        """
+
         for i in range(5):
-            response = self.client.post('/api/schedule/', {
-                'date': '2066-10-25',
-                'hours': 16,
-                'minutes': 20,
-                'name': 'Dr4kk0 Inc.'
-            })
+            response = self.client.post('/api/schedule/', get_response_object_before_11_30())
 
             self.assertEqual(response.status_code, 302)
-            self.assertEqual(response.url, '/api/success/25-10-2066/16-20/Dr4kk0%20Inc./')
+            self.assertEqual(response.url, '/api/success/28-10-2065/10-20/Dr4kk0%20Inc./')
+
+    def test_handle_post_request_data_with_five_scheduled_values_at_11_30(self):
+        """ Old logic ( following old business rule )
+        5 post requests with a date that is already scheduled
+        should redirect the user to /api/success/
+        """
+
+        """ New logic ( following current business rule )
+        5 post requests with a date that is already scheduled
+        and the time is less than or equals 11:30 should
+        redirect the user to /api/success/
+        """
+
+        for i in range(5):
+            response = self.client.post('/api/schedule/', get_response_object_at_11_30())
+
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response.url, '/api/success/28-10-2065/11-30/Dr4kk0%20Inc./')
+
+    def test_handle_post_request_data_with_three_scheduled_values_after_11_30(self):
+        """ Old logic ( following old business rule )
+        5 post requests with a date that is already scheduled
+        should redirect the user to /api/success/
+        """
+
+        """ New logic ( following current business rule )
+        3 post requests with a date that is already scheduled
+        and the time is greater than 11:30 should
+        redirect the user to /api/success/
+        """
+
+        for i in range(3):
+            response = self.client.post('/api/schedule/', get_response_object_after_11_30())
+
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response.url, '/api/success/28-10-2065/16-20/Dr4kk0%20Inc./')
+
+    def test_handle_post_request_data_with_five_scheduled_values_after_11_30(self):
+        """ Old logic ( following old business rule )
+        5 post requests with a date that is already scheduled
+        should redirect the user to /api/success/
+        """
+
+        """ New logic ( following current business rule )
+        5 post requests with a date that is already scheduled
+        and the time is greater than 11:30 should
+        redirect the user to /api/error/4/
+        """
+
+        for i in range(3):
+            response = self.client.post('/api/schedule/', get_response_object_after_11_30())
+
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response.url, '/api/success/28-10-2065/16-20/Dr4kk0%20Inc./')
+
+        response = self.client.post('/api/schedule/', get_response_object_after_11_30())
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/api/error/4/')
 
     def test_handle_post_request_data_with_six_scheduled_values(self):
         """
@@ -159,17 +243,17 @@ class CheckRequestHandleTests(TestCase):
         for i in range(5):
             response = self.client.post('/api/schedule/', {
                 'date': '2066-10-25',
-                'hours': 16,
+                'hours': 11,
                 'minutes': 20,
                 'name': 'Dr4kk0 Inc.'
             })
 
             self.assertEqual(response.status_code, 302)
-            self.assertEqual(response.url, '/api/success/25-10-2066/16-20/Dr4kk0%20Inc./')
+            self.assertEqual(response.url, '/api/success/25-10-2066/11-20/Dr4kk0%20Inc./')
 
         response = self.client.post('/api/schedule/', {
             'date': '2066-10-25',
-            'hours': 16,
+            'hours': 11,
             'minutes': 20,
             'name': 'Dr4kk0 Inc.'
         })
