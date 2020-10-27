@@ -37,14 +37,43 @@ def create_scheduled_date():
     datetime_string = 'Oct 25 2066 16:20'
     datetime_object = datetime.strptime(datetime_string, '%b %d %Y %H:%M')
 
-    company_name = 'Dr4kk0 Inc.'
-
     # making sure it was created
-    ScheduledDate.objects.get_or_create(date=datetime_object, name=company_name)
+    new_scheduled_date_object = ScheduledDate.objects.get_or_create(date=datetime_object)
+    scheduled_object = ScheduledDate.objects.get(date=datetime_object)
 
-    new_scheduled_date = ScheduledDate.objects.get_or_create(date=datetime_object, name=company_name)
+    return new_scheduled_date_object, scheduled_object
 
-    return new_scheduled_date
+
+def create_and_update_scheduled_date():
+    datetime_string = 'Oct 25 2066 16:20'
+    datetime_object = datetime.strptime(datetime_string, '%b %d %Y %H:%M')
+
+    create_scheduled_date()
+
+    # updating the new one, since it already exists
+    new_scheduled_date = ScheduledDate.objects.select_for_update().get(date=datetime_object)
+    new_scheduled_date.count += 1
+    new_scheduled_date.name_set.create(name='Fake Business for tests only.')
+    new_scheduled_date.save()
+
+    scheduled_date_object = ScheduledDate.objects.get(date=datetime_object)
+
+    return scheduled_date_object
+
+
+# Requires creation
+def update_scheduled_date():
+    datetime_string = 'Oct 25 2066 16:20'
+    datetime_object = datetime.strptime(datetime_string, '%b %d %Y %H:%M')
+
+    new_scheduled_date = ScheduledDate.objects.select_for_update().get(date=datetime_object)
+    new_scheduled_date.count += 1
+    new_scheduled_date.name_set.create(name='Fake Business for tests only.')
+    new_scheduled_date.save()
+
+    scheduled_date_object = ScheduledDate.objects.get(date=datetime_object)
+
+    return scheduled_date_object
 
 
 class CheckRequestHandleTests(TestCase):
@@ -100,12 +129,83 @@ class CheckRequestHandleTests(TestCase):
 
 
 class CheckDatabaseHandleTests(TestCase):
+    """ Old logic ( following old business rule )
+    Creating a new scheduled meeting in the database
+    when there is a meeting already booked should not
+    work, and the meeting shall not be created.
+    """
+
+    """ New logic ( following current business rule )
+    Creating a new scheduled meeting in the database
+    when there is a meeting already booked should work
+    if the count value is smaller than 5.
+    """
+
+    def test_handle_database_creation_with_no_existing_value(self):
+        """
+        Creating a new schedule when there is no existing
+        object in the database should return true. Since
+        the object was in fact created.
+        """
+        (scheduled_date_object, _) = create_scheduled_date()
+        self.assertEqual(scheduled_date_object[1], True)
+
     def test_handle_database_creation_with_already_existing_value(self):
         """
-        Creating a new scheduled meeting in the database
-        when there is a meeting already booked should not
-        work, and the meeting shall not be created.
+        Creating a new schedule when there is already a existing
+        schedule object in the database should return False, since
+        the object is not brand new.
         """
-        create_scheduled_date()
-        new_scheduled_date = create_scheduled_date()
-        self.assertEqual(new_scheduled_date[1], False)
+        (first_object, _) = create_scheduled_date()
+        (second_object, _) = create_scheduled_date()
+
+        self.assertEqual(first_object[1], True)
+        self.assertEqual(second_object[1], False)
+
+    def test_handle_database_create_count_value(self):
+        """
+        Creating an object in the database with empty
+        name and count, should create an object with
+        default values:
+
+        Name: 'Fake Business for tests only.'
+        Count: 1
+        """
+        (_, scheduled_object) = create_scheduled_date()
+
+        self.assertEqual(scheduled_object.count, 1)
+
+    def test_handle_database_create_and_update_name_and_value(self):
+        """
+        Creating a new object in the database should set the
+        count to 1. Adding a new object should increase the value to
+        2. And updating the name on the database should set the
+        name to the updated name.
+        """
+
+        scheduled_date_object = create_and_update_scheduled_date()
+
+        self.assertEqual(scheduled_date_object.count, 2)
+        self.assertEqual(scheduled_date_object.name_set.all()[0].name, 'Fake Business for tests only.')
+
+    def test_handle_database_creating_5_schedules(self):
+        """
+        The database should be able to create 5 schedules
+        to a same time.
+        """
+        (first_object, scheduled_date) = create_scheduled_date()
+
+        self.assertEqual(first_object[1], True)
+        self.assertEqual(scheduled_date.count, 1)
+
+        scheduled_date = update_scheduled_date()
+        self.assertEqual(scheduled_date.count, 2)
+
+        scheduled_date = update_scheduled_date()
+        self.assertEqual(scheduled_date.count, 3)
+
+        scheduled_date = update_scheduled_date()
+        self.assertEqual(scheduled_date.count, 4)
+
+        scheduled_date = update_scheduled_date()
+        self.assertEqual(scheduled_date.count, 5)

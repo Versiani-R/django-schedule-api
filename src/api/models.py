@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 
 # Command to  add new migrations: python manage.py makemigrations api
@@ -9,7 +10,10 @@ class ScheduledDate(models.Model):
     Date: day/month/year
     """
     date = models.DateTimeField('scheduled meeting')
-    count = models.IntegerField(default=1)
+    count = models.IntegerField(default=1, validators=[
+        MaxValueValidator(5),
+        MinValueValidator(1)
+    ])
 
     objects = models.Manager()
 

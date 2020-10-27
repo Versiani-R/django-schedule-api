@@ -7,13 +7,9 @@ from datetime import datetime
 from .models import ScheduledDate
 
 
-# TODO: Bug check
 # TODO: Update your tests ( 1 is falling )
-# TODO: Check for mistakes in your code
 # TODO: Check every possible case of the code
 # TODO: Create tests for the new code
-
-# TODO: Name should be renamed Names, and passed as an array, since it can hold multiple names
 
 # TODO: Create pyautogui test for the multiple request at the same time
 
