@@ -110,11 +110,17 @@ class CheckRequestHandleTests(TestCase):
         self.assertEqual(response.url, '/api/error/3/')
 
     def test_handle_post_request_data_with_already_scheduled_value(self):
-        """
+        """ Old logic ( following old business rule )
         A post request with a date that is already scheduled
         should redirect the user to /api/error/4
 
         Read more on the api/templates/api/schedule_error.html
+        """
+
+        """ New logic ( following current business rule )
+        A post request with a date that is already scheduled
+        should redirect the user to /api/success/ if the
+        database_object.count value is less than 5
         """
         create_scheduled_date()
 
@@ -124,6 +130,50 @@ class CheckRequestHandleTests(TestCase):
             'minutes': 20,
             'name': 'Dr4kk0 Inc.'
         })
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/api/success/25-10-2066/16-20/Dr4kk0%20Inc./')
+
+    def test_handle_post_request_data_with_five_scheduled_values(self):
+        """
+        5 post requests with a date that is already scheduled
+        should redirect the user to /api/success/
+        """
+
+        for i in range(5):
+            response = self.client.post('/api/schedule/', {
+                'date': '2066-10-25',
+                'hours': 16,
+                'minutes': 20,
+                'name': 'Dr4kk0 Inc.'
+            })
+
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response.url, '/api/success/25-10-2066/16-20/Dr4kk0%20Inc./')
+
+    def test_handle_post_request_data_with_six_scheduled_values(self):
+        """
+        6 post requests with a date that is already scheduled
+        should redirect the user to /api/error/4
+        """
+
+        for i in range(5):
+            response = self.client.post('/api/schedule/', {
+                'date': '2066-10-25',
+                'hours': 16,
+                'minutes': 20,
+                'name': 'Dr4kk0 Inc.'
+            })
+
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response.url, '/api/success/25-10-2066/16-20/Dr4kk0%20Inc./')
+
+        response = self.client.post('/api/schedule/', {
+            'date': '2066-10-25',
+            'hours': 16,
+            'minutes': 20,
+            'name': 'Dr4kk0 Inc.'
+        })
+
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, '/api/error/4/')
 
@@ -198,14 +248,15 @@ class CheckDatabaseHandleTests(TestCase):
         self.assertEqual(first_object[1], True)
         self.assertEqual(scheduled_date.count, 1)
 
-        scheduled_date = update_scheduled_date()
-        self.assertEqual(scheduled_date.count, 2)
-
-        scheduled_date = update_scheduled_date()
-        self.assertEqual(scheduled_date.count, 3)
-
-        scheduled_date = update_scheduled_date()
-        self.assertEqual(scheduled_date.count, 4)
-
-        scheduled_date = update_scheduled_date()
-        self.assertEqual(scheduled_date.count, 5)
+        for i in range(2, 6):
+            scheduled_date = update_scheduled_date()
+            self.assertEqual(scheduled_date.count, i)
+        #
+        # scheduled_date = update_scheduled_date()
+        # self.assertEqual(scheduled_date.count, 3)
+        #
+        # scheduled_date = update_scheduled_date()
+        # self.assertEqual(scheduled_date.count, 4)
+        #
+        # scheduled_date = update_scheduled_date()
+        # self.assertEqual(scheduled_date.count, 5)
