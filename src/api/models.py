@@ -33,6 +33,7 @@ class User(models.Model):
     email = models.EmailField()
     password = models.CharField(max_length=256)
     token_id = models.CharField(max_length=256)
+    api_calls = models.IntegerField(default=0)
 
     objects = models.Manager()
 
