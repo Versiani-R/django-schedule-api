@@ -7,6 +7,10 @@ from datetime import datetime
 from .models import ScheduledDate
 
 
+# TODO: Implement the new api logic:
+# TODO: All functions must return a json
+# TODO: Work on the authentication of requests
+
 # TODO: Create pyautogui test for the multiple request at the same time
 
 
