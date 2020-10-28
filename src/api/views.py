@@ -116,7 +116,7 @@ def api_schedule(request):
         # TODO: Increment the value of api_calls of the user
         if is_available:
             database_object.count = F('count') + 1
-            database_object.name_set.create(name=post_request['company_name'])
+            database_object.name_set.create(name=post_request['company-name'])
             database_object.save()
         else:
             json_response = get_json_response(
@@ -135,7 +135,7 @@ def api_schedule(request):
         """
         ScheduledDate.objects.get_or_create(date=datetime_object)
         database_object = ScheduledDate.objects.select_for_update().get(date=datetime_object)
-        database_object.name_set.create(name=post_request['company_name'])
+        database_object.name_set.create(name=post_request['company-name'])
         database_object.save()
 
     """
@@ -156,33 +156,8 @@ def api_schedule(request):
         data={
             "date": f"{post_request['day']}-{post_request['month']}-{post_request['year']}",
             "time": f"{post_request['hours']}:{post_request['minutes']}",
-            "company_name": post_request['name']
+            "company-name": post_request['company-name']
         },
         error={}
     )
     return JsonResponse(json_response)
-
-    # return redirect(
-    #     'schedule_success',
-    #     post_request['day'],
-    #     post_request['month'],
-    #     post_request['year'],
-    #     post_request['hours'],
-    #     post_request['minutes'],
-    #     post_request['company_name'],
-    # )
-
-#
-# def api_error(request, error_code):
-#     return render(request, 'api/schedule_error.html', {'error_code': error_code})
-#
-#
-# def api_success(request, day, month, year, hours, minutes, company_name):
-#     return render(request, 'api/schedule_success.html', {
-#         'day': day,
-#         'month': month,
-#         'year': year,
-#         'hours': hours,
-#         'minutes': minutes,
-#         'company_name': company_name
-#     })

@@ -12,7 +12,7 @@ def is_token_id_valid(token_id):
 
 def handle_request_post_data_to_api_schedule(request):
     # Standard checks
-    keys = ['day', 'month', 'year', 'hours', 'minutes', 'name', 'token-id']
+    keys = ['day', 'month', 'year', 'hours', 'minutes', 'company-name', 'token-id']
     for key in keys:
         if not request.POST.get(key):
             raise InvalidPost(message='Invalid or Missing Post Data.', code=1)
@@ -54,7 +54,7 @@ def handle_request_post_data_to_api_schedule(request):
                                   'documentation.', code=2)
 
     # name of the company for organization's sake
-    company_name = request.POST['name']
+    company_name = request.POST['company-name']
 
     token_id = request.POST['token-id']
 
@@ -67,7 +67,7 @@ def handle_request_post_data_to_api_schedule(request):
         'year': year,
         'hours': hours,
         'minutes': minutes,
-        'company_name': company_name,
+        'company-name': company_name,
     }
 
 
