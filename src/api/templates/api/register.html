@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register</title>
+</head>
+<body>
+    <h1>Register to use the api!</h1>
+
+    <form action="{% url 'handle_register' %}" method="post">
+        {% csrf_token %}
+
+        <div>
+            <input id="email" name="email" type="email" placeholder="Email" required>
+
+            <br>
+
+            <input id="password" name="password" type="password" placeholder="Password" required>
+
+            <br>
+
+            <button>Register</button>
+        </div>
+    </form>
+</body>
+</html>

@@ -4,7 +4,7 @@ Pass for the admin:
 """
 from django.contrib import admin
 
-from .models import ScheduledDate, Name
+from .models import ScheduledDate, Name, User
 
 
 class NameInLine(admin.StackedInline):
@@ -18,3 +18,4 @@ class ScheduledDateAdmin(admin.ModelAdmin):
 
 
 admin.site.register(ScheduledDate, ScheduledDateAdmin)
+admin.site.register(User)

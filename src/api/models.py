@@ -27,3 +27,14 @@ class Name(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class User(models.Model):
+    email = models.EmailField()
+    password = models.CharField(max_length=256)
+    token_id = models.CharField(max_length=256)
+
+    objects = models.Manager()
+
+    def __str__(self):
+        return self.email

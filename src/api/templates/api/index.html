@@ -9,30 +9,34 @@
 <body>
     <h1 id="title">Dr4kk0nnys' Api Inc.</h1>
 
-    <form action="{% url 'schedule' %}" method="post">
-        {% csrf_token %}
+<!--    <form action="{% url 'schedule' %}" method="post">-->
+<!--        {% csrf_token %}-->
 
-        <div id="date-div">
-            <label for="date">Date:</label>
-            <input type="date" required id="date" name="date">
-        </div>
+<!--        <div id="date-div">-->
+<!--            <label for="date">Date:</label>-->
+<!--            <input type="date" required id="date" name="date">-->
+<!--        </div>-->
 
-        <div id="time-div">
-            <label for="hour">Hour : Minutes:</label>
-            <input type="number" id="hour" name="hours" required min="7" max="18" placeholder="Hours">
-            <select name="minutes" id="minutes">
-                <option value="00">00</option>
-                <option value="30">30</option>
-            </select>
-        </div>
+<!--        <div id="time-div">-->
+<!--            <label for="hour">Hour : Minutes:</label>-->
+<!--            <input type="number" id="hour" name="hours" required min="7" max="18" placeholder="Hours">-->
+<!--            <select name="minutes" id="minutes">-->
+<!--                <option value="00">00</option>-->
+<!--                <option value="30">30</option>-->
+<!--            </select>-->
+<!--        </div>-->
 
-        <div id="name-div">
-            <label for="name">Company's Name:</label>
-            <input type="text" id="name" name="name" required placeholder="Name">
-        </div>
+<!--        <div id="name-div">-->
+<!--            <label for="name">Company's Name:</label>-->
+<!--            <input type="text" id="name" name="name" required placeholder="Name">-->
+<!--        </div>-->
 
-        <button class="myButton">Schedule meeting</button>
-    </form>
+<!--        <button class="myButton">Schedule meeting</button>-->
+<!--    </form>-->
+
+    <h1>
+        <a href="register/">Register now!</a>
+    </h1>
 
     <h1 id="news">News</h1>
 
@@ -50,6 +54,44 @@
         </li>
     </ul>
 
-    <h1><a href="api/">Check API</a></h1>
+    <h1><a href="#">Documentation</a></h1>
+
+    <h1>Fully Scalable Api with Django</h1>
+
+    <p>Fully scalable rest api with django. The project aims to create a series of apps with the main focus in
+        scalability, avoid racing-conditions with the api and more...</p>
+
+    <p>
+        The project itself has a simple core ( as it really should ).
+        The main goal of this project is to present an actual live server backend.
+    </p>
+
+    <h3>Capable of:</h3>
+
+    <ul>
+        <li>Handling multiple requests</li>
+        <li>Avoiding Race-Conditions</li>
+        <li>Scale up</li>
+        <li>Testing each feature ( test-rich )</li>
+        <li>Making a well documented code</li>
+        <li>Take full advantage of every key-component</li>
+    </ul>
+
+    <h3>Goals:</h3>
+    <ul>
+        <li>Scheduling api</li>
+        <li>Database connection with mysqllite3</li>
+        <li>Localhost server</li>
+        <li>Basic UI</li>
+        <li>Avoid Racing-Conditions</li>
+        <li>Standardize input to the database</li>
+        <li>Follow CTWC Rule</li>
+        <ul>
+            <li>Create Code</li>
+            <li>Test Code</li>
+            <li>Write Tests</li>
+            <li>Commit Code</li>
+        </ul>
+    </ul>
 </body>
 </html>

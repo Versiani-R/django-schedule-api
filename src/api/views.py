@@ -1,15 +1,20 @@
 from django.shortcuts import render, redirect
 from django.db.models import F
-from django.contrib.auth.decorators import user_passes_test
+from django.http import JsonResponse, HttpResponse
 
 from datetime import datetime
 
-from .models import ScheduledDate
+from .utils import *
+from .authentication import generate_hash, generate_token
+from .exceptions import InvalidPost, InvalidTokenId
+from .models import ScheduledDate, User
 
 
 # TODO: Implement the new api logic:
 # TODO: All functions must return a json
 # TODO: Work on the authentication of requests
+
+# TODO: Standardize the JSON Response
 
 # TODO: Create pyautogui test for the multiple request at the same time
 
@@ -18,23 +23,42 @@ def index(request):
     return render(request, 'api/index.html')
 
 
-def api_index(request):
-    return render(request, 'api/api.html')
+def register(request):
+    return render(request, 'api/register.html')
 
 
-def check_admin(user):
-    return user.is_superuser
+def handle_register(request):
+
+    if ('email' and 'password') not in request.POST:
+        raise InvalidPost(message='Invalid Post Data.')
+
+    email = request.POST['email']
+    password = request.POST['password']
+
+    if User.objects.filter(email=email):
+        return HttpResponse('Email already registered.')
+
+    if len(password) < 6:
+        return HttpResponse('Password too short. It must be at least 6 characters long.')
+
+    hashed_password = generate_hash(password)
+    token_id = generate_token(email, password)
+
+    User.objects.get_or_create(email=email, password=hashed_password, token_id=token_id)
+
+    return render(request, 'api/register_success.html', {"token_id": token_id})
 
 
-@user_passes_test(check_admin)
-def api_detail(request):
-    return render(request, 'api/detail.html', {'scheduled_meetings': ScheduledDate.objects.all()})
+def is_token_id_valid(token_id):
+    if User.objects.filter(token_id=token_id):
+        return True
+    return False
 
 
 def handle_request_post_data_to_api_schedule(request):
     # Standard checks
     if ('date' and 'hours' and 'minutes' and 'name') not in request.POST:
-        return redirect('schedule_error', error_code=1)
+        raise InvalidPost(message='Invalid Post Data.')
 
     """
     Date is a html input, whose type is 'date'
@@ -48,13 +72,27 @@ def handle_request_post_data_to_api_schedule(request):
     Hours: 18
     Minutes: 59
     """  # Stupid time-variables ...
-    date = request.POST['date']
-    [day, month, year] = [date.split('-')[-i] for i in range(1, 4)]
+    day = request.POST['day']
+    month = request.POST['month']
+    year = request.POST['year']
+
+    # TODO: Check if day, month and year are correct
+
     hours = request.POST['hours']
     minutes = request.POST['minutes']
 
+    # TODO: Check if hours and minutes are correct
+
+    # print(f'Hours:Minutes: {hours}:{minutes}')
+    # print(f'Day: {day} / Month: {month} / Year: {year}')
+
     # name of the company for organization's sake
     company_name = request.POST['name']
+
+    token_id = request.POST['token-id']
+
+    if not is_token_id_valid(token_id):
+        raise InvalidTokenId(message='Token ID is invalid.')
 
     return {
         'day': day,
@@ -67,6 +105,7 @@ def handle_request_post_data_to_api_schedule(request):
 
 
 def convert_datetime_string_to_datetime_object(post_request, months):
+    print(f'Testing: {post_request["month"]}')
     datetime_string = f'{months[int(post_request["month"]) - 1]} {post_request["day"]} {post_request["year"]} ' \
                       f'{post_request["hours"]}:{post_request["minutes"]}'
 
@@ -122,7 +161,8 @@ def is_meeting_scheduled_time_available(datetime_object):
     """ Check 3: Check if day and hour is available, and then check if there's no over than 5 meetings scheduled.
 
         Retrieve all the scheduled_dates from the database and compare with the datetime_object.
-        If a match on the day is found, it checks for the time, if a match occurs, then they're scheduled for the same time.
+        If a match on the day is found, it checks for the time, if a match occurs, then they're scheduled for the same
+        time.
 
         sanitized_scheduled_date[0] is the same as the date, it looks like this:
             * sanitized_scheduled_date[0]:  '2020-10-29'
@@ -132,9 +172,9 @@ def is_meeting_scheduled_time_available(datetime_object):
             * sanitized_scheduled_time:  '12:00:00'
             * sanitized_datetime_object[1]: '12:00:00'
 
-        **Note**: Since the user can only schedule a meeting on either 0 or 30 minutes, it's really not necessary to check
-        for hours and only after that, minutes. That's why the time itself is compared, and not hours, and only then,
-        minutes.
+        **Note**: Since the user can only schedule a meeting on either 0 or 30 minutes, it's really not necessary to
+        check  for hours and only after that, minutes. That's why the time itself is compared, and not hours,
+        and only then, minutes.
         """
     scheduled_dates = ScheduledDate.objects.all()
 
@@ -190,7 +230,12 @@ def is_meeting_scheduled_time_available(datetime_object):
 
 def api_schedule(request):
 
-    post_request = handle_request_post_data_to_api_schedule(request)
+    try:
+        post_request = handle_request_post_data_to_api_schedule(request)
+    except InvalidPost:
+        return JsonResponse({"invalid": "true"})
+    except InvalidTokenId:
+        return JsonResponse({"invalidTokenId": "true"})
 
     datetime_object = convert_datetime_string_to_datetime_object(post_request, months=[
             'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
@@ -240,27 +285,29 @@ def api_schedule(request):
     # timezone_aware_date = current_timezone.localize(datetime_object)
     # print(f'Timezone aware date: {timezone_aware_date}')
 
-    return redirect(
-        'schedule_success',
-        post_request['day'],
-        post_request['month'],
-        post_request['year'],
-        post_request['hours'],
-        post_request['minutes'],
-        post_request['company_name'],
-    )
+    return JsonResponse({"success": "true"})
 
+    # return redirect(
+    #     'schedule_success',
+    #     post_request['day'],
+    #     post_request['month'],
+    #     post_request['year'],
+    #     post_request['hours'],
+    #     post_request['minutes'],
+    #     post_request['company_name'],
+    # )
 
-def api_error(request, error_code):
-    return render(request, 'api/schedule_error.html', {'error_code': error_code})
-
-
-def api_success(request, day, month, year, hours, minutes, company_name):
-    return render(request, 'api/schedule_success.html', {
-        'day': day,
-        'month': month,
-        'year': year,
-        'hours': hours,
-        'minutes': minutes,
-        'company_name': company_name
-    })
+#
+# def api_error(request, error_code):
+#     return render(request, 'api/schedule_error.html', {'error_code': error_code})
+#
+#
+# def api_success(request, day, month, year, hours, minutes, company_name):
+#     return render(request, 'api/schedule_success.html', {
+#         'day': day,
+#         'month': month,
+#         'year': year,
+#         'hours': hours,
+#         'minutes': minutes,
+#         'company_name': company_name
+#     })
