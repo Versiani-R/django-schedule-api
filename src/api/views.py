@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.db.models import F
 from django.http import JsonResponse, HttpResponse
 
@@ -56,10 +56,26 @@ def api_schedule(request):
 
     try:
         post_request = handle_request_post_data_to_api_schedule(request)
-    except InvalidPost:
-        return JsonResponse({"invalid": "true"})
+    except InvalidPost as invalid_post:
+        json_response = get_json_response(
+            success="false",
+            data={},
+            error={
+                "code": invalid_post.code,
+                "message": invalid_post.message
+            }
+        )
+        return JsonResponse(json_response)
     except InvalidTokenId:
-        return JsonResponse({"invalidTokenId": "true"})
+        json_response = get_json_response(
+            success="false",
+            data={},
+            error={
+                "code": 3,
+                "message": "Invalid Token Id."
+            }
+        )
+        return JsonResponse(json_response)
 
     datetime_object = convert_datetime_string_to_datetime_object(post_request, months=[
             'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
@@ -74,9 +90,25 @@ def api_schedule(request):
         * is_meeting_scheduled_time_available
     """
     if was_meeting_scheduled_to_a_saturday_or_sunday(datetime_object):
-        return redirect('schedule_error', error_code=2)
+        json_response = get_json_response(
+            success="false",
+            data={},
+            error={
+                "code": 4,
+                "message": "Cannot Schedule a meeting to a saturday or sunday."
+            }
+        )
+        return JsonResponse(json_response)
     if was_meeting_scheduled_to_the_past(datetime_object):
-        return redirect('schedule_error', error_code=3)
+        json_response = get_json_response(
+            success="false",
+            data={},
+            error={
+                "code": 5,
+                "message": "Cannot Schedule a meeting to the past."
+            }
+        )
+        return JsonResponse(json_response)
 
     try:
         (is_available, database_object) = is_meeting_scheduled_time_available(datetime_object)
@@ -87,7 +119,15 @@ def api_schedule(request):
             database_object.name_set.create(name=post_request['company_name'])
             database_object.save()
         else:
-            return redirect('schedule_error', error_code=4)
+            json_response = get_json_response(
+                success="false",
+                data={},
+                error={
+                    "code": 6,
+                    "message": "Number of meetings scheduled to the date and hour is over the allowed number."
+                }
+            )
+            return JsonResponse(json_response)
     except TypeError:
         """
         TypeError occurs when the database_object is empty ( nothing on the database )
@@ -111,7 +151,16 @@ def api_schedule(request):
     # timezone_aware_date = current_timezone.localize(datetime_object)
     # print(f'Timezone aware date: {timezone_aware_date}')
 
-    return JsonResponse({"success": "true"})
+    json_response = get_json_response(
+        success="true",
+        data={
+            "date": f"{post_request['day']}-{post_request['month']}-{post_request['year']}",
+            "time": f"{post_request['hours']}:{post_request['minutes']}",
+            "company_name": post_request['name']
+        },
+        error={}
+    )
+    return JsonResponse(json_response)
 
     # return redirect(
     #     'schedule_success',

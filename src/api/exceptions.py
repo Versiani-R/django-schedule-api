@@ -1,8 +1,8 @@
 class InvalidPost(Exception):
-    def __init__(self, message):
+    def __init__(self, message, code):
         self.message = message
+        self.code = code
 
 
 class InvalidTokenId(Exception):
-    def __init__(self, message):
-        self.message = message
+    pass

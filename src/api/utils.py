@@ -12,8 +12,10 @@ def is_token_id_valid(token_id):
 
 def handle_request_post_data_to_api_schedule(request):
     # Standard checks
-    if ('date' and 'hours' and 'minutes' and 'name') not in request.POST:
-        raise InvalidPost(message='Invalid Post Data.')
+    keys = ['day', 'month', 'year', 'hours', 'minutes', 'name', 'token-id']
+    for key in keys:
+        if not request.POST.get(key):
+            raise InvalidPost(message='Invalid or Missing Post Data.', code=1)
 
     """
     Date is a html input, whose type is 'date'
@@ -31,15 +33,25 @@ def handle_request_post_data_to_api_schedule(request):
     month = request.POST['month']
     year = request.POST['year']
 
-    # TODO: Check if day, month and year are correct
+    if len(day) != 2 or len(month) != 2:
+        raise InvalidPost(message='Day and Month must be standardized! Read the "Data" at the official documentation.',
+                          code=2)
+    if len(year) != 4:
+        raise InvalidPost(message='Year must be standardized! Read the "Data" at the official documentation.', code=2)
+
+    if 1 > int(day) > 31 or 1 > int(month) > 12:
+        raise InvalidPost(message='Day or Month value is incorrect! Read the "Data" at the official documentation.',
+                          code=2)
 
     hours = request.POST['hours']
     minutes = request.POST['minutes']
 
-    # TODO: Check if hours and minutes are correct
-
-    # print(f'Hours:Minutes: {hours}:{minutes}')
-    # print(f'Day: {day} / Month: {month} / Year: {year}')
+    if len(hours) != 2 or len(minutes) != 2:
+        raise InvalidPost(message='Hours and Minutes must be standardized! Read the "Data" at the official '
+                                  'documentation.', code=2)
+    if 1 > int(hours) > 23 or 1 > int(minutes) > 59:
+        raise InvalidPost(message='Hours and Minutes must be standardized! Read the "Data" at the official '
+                                  'documentation.', code=2)
 
     # name of the company for organization's sake
     company_name = request.POST['name']
@@ -47,7 +59,7 @@ def handle_request_post_data_to_api_schedule(request):
     token_id = request.POST['token-id']
 
     if not is_token_id_valid(token_id):
-        raise InvalidTokenId(message='Token ID is invalid.')
+        raise InvalidTokenId()
 
     return {
         'day': day,
@@ -179,3 +191,11 @@ def is_meeting_scheduled_time_available(datetime_object):
 
                 else:
                     return False, database_object
+
+
+def get_json_response(success, data, error):
+    return {
+        "success": success,
+        "data": data,
+        "error": error
+    }
