@@ -288,20 +288,18 @@ def update_scheduled_date():
 
 
 class CheckDatabaseHandleTests(TestCase):
-    def not_test_handle_database_creation_with_no_existing_value(self):
+    def test_handle_database_creation_with_no_existing_value(self):
         """
-        Creating a new schedule when there is no existing
-        object in the database should return true. Since
-        the object was in fact created.
+        Creating a new schedule when there is no existing object in the database should return true. Since the object
+        was in fact created.
         """
         (scheduled_date_object, _) = create_scheduled_date()
         self.assertEqual(scheduled_date_object[1], True)
 
-    def not_test_handle_database_creation_with_already_existing_value(self):
+    def test_handle_database_creation_with_already_existing_value(self):
         """
-        Creating a new schedule when there is already a existing
-        schedule object in the database should return False, since
-        the object is not brand new.
+        Creating a new schedule when there is already a existing schedule object in the database should return False,
+        since the object is not brand new.
         """
         (first_object, _) = create_scheduled_date()
         (second_object, _) = create_scheduled_date()
@@ -309,25 +307,23 @@ class CheckDatabaseHandleTests(TestCase):
         self.assertEqual(first_object[1], True)
         self.assertEqual(second_object[1], False)
 
-    def not_test_handle_database_create_count_value(self):
+    def test_handle_database_create_count_value(self):
         """
-        Creating an object in the database with empty
-        name and count, should create an object with
-        default values:
+        Creating an object in the database with empty name and count, should create an object with default values:
 
         Name: 'Fake Business for tests only.'
         Count: 1
         """
         (_, scheduled_object) = create_scheduled_date()
-
         self.assertEqual(scheduled_object.count, 1)
 
-    def not_test_handle_database_create_and_update_name_and_value(self):
+    def test_handle_database_create_and_update_name_and_value(self):
         """
-        Creating a new object in the database should set the
-        count to 1. Adding a new object should increase the value to
-        2. And updating the name on the database should set the
-        name to the updated name.
+        Creating a new object in the database should set the count to 1.
+
+        Adding a new object should increase the value to 2.
+
+        Updating the name on the database should set the name to the updated name.
         """
 
         scheduled_date_object = create_and_update_scheduled_date()
@@ -335,10 +331,9 @@ class CheckDatabaseHandleTests(TestCase):
         self.assertEqual(scheduled_date_object.count, 2)
         self.assertEqual(scheduled_date_object.name_set.all()[0].name, 'Fake Business for tests only.')
 
-    def not_test_handle_database_creating_5_schedules(self):
+    def test_handle_database_creating_5_schedules(self):
         """
-        The database should be able to create 5 schedules
-        to a same time.
+        The database should be able to create 5 schedules to a same time.
         """
         (first_object, scheduled_date) = create_scheduled_date()
 
@@ -348,12 +343,3 @@ class CheckDatabaseHandleTests(TestCase):
         for i in range(2, 6):
             scheduled_date = update_scheduled_date()
             self.assertEqual(scheduled_date.count, i)
-        #
-        # scheduled_date = update_scheduled_date()
-        # self.assertEqual(scheduled_date.count, 3)
-        #
-        # scheduled_date = update_scheduled_date()
-        # self.assertEqual(scheduled_date.count, 4)
-        #
-        # scheduled_date = update_scheduled_date()
-        # self.assertEqual(scheduled_date.count, 5)
