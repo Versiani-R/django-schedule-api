@@ -8,13 +8,8 @@ from .exceptions import InvalidPost, InvalidTokenId
 from .models import ScheduledDate, User
 
 
-# TODO: Do the documentation
-
-# TODO: Implement the new api logic:
-# TODO: All functions must return a json
-# TODO: Work on the authentication of requests
-
-# TODO: Standardize the JSON Response
+# TODO: Increment the value of api_calls of the user
+# TODO: Reset the value of api calls after some time
 
 # TODO: Delete junk files
 
@@ -56,6 +51,7 @@ def api_schedule(request):
 
     try:
         post_request = handle_request_post_data_to_api_schedule(request)
+
     except InvalidPost as invalid_post:
         json_response = get_json_response(
             success="false",
@@ -66,6 +62,7 @@ def api_schedule(request):
             }
         )
         return JsonResponse(json_response)
+
     except InvalidTokenId:
         json_response = get_json_response(
             success="false",
@@ -99,6 +96,7 @@ def api_schedule(request):
             }
         )
         return JsonResponse(json_response)
+
     if was_meeting_scheduled_to_the_past(datetime_object):
         json_response = get_json_response(
             success="false",
@@ -113,7 +111,6 @@ def api_schedule(request):
     try:
         (is_available, database_object) = is_meeting_scheduled_time_available(datetime_object)
 
-        # TODO: Increment the value of api_calls of the user
         if is_available:
             database_object.count = F('count') + 1
             database_object.name_set.create(name=post_request['company-name'])
@@ -128,6 +125,7 @@ def api_schedule(request):
                 }
             )
             return JsonResponse(json_response)
+
     except TypeError:
         """
         TypeError occurs when the database_object is empty ( nothing on the database )
