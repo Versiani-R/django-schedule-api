@@ -9,8 +9,6 @@ from django.db.models import F
 def reset_api_calls_after_15_minutes():
     users_with_api_calls_greater_than_1 = User.objects.filter(api_calls__gte=1)
 
-    print('Yolooooooooooooooooooooooooooooooooooooooo')
-
     for user in users_with_api_calls_greater_than_1:
         user.api_calls = F('api_calls') * 0
         user.save()
