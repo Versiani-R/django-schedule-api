@@ -2,8 +2,6 @@ from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 
-# Command to  add new migrations: python manage.py makemigrations api
-# Command to save new migrations: python manage.py migrate
 class ScheduledDate(models.Model):
     """
     Hour: 8 to 18,

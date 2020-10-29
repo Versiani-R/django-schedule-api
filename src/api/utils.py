@@ -1,16 +1,9 @@
-from django.db.models import F
 from django.db.models import ObjectDoesNotExist
 
 from datetime import datetime
 
 from .models import User, ScheduledDate
 from .exceptions import InvalidPost, InvalidTokenId
-
-
-def is_token_id_valid(token_id):
-    if User.objects.filter(token_id=token_id):
-        return True
-    return False
 
 
 def is_date_valid(day, month, year):
@@ -34,11 +27,6 @@ def is_time_valid(hours, minutes):
     if (int(hours) < 1 or int(hours) > 23) or (int(minutes) < 1 or int(minutes) > 59):
         raise InvalidPost(message='Hours and Minutes must be standardized! Read the "Data" at the official '
                                   'documentation.', code=2)
-
-
-def increment_user_api_calls(user):
-    user.api_calls = F('api_calls') + 1
-    user.save()
 
 
 def handle_request_post_data_to_api_schedule(request):
@@ -76,7 +64,7 @@ def handle_request_post_data_to_api_schedule(request):
 
     token_id = request.POST['token-id']
 
-    if not is_token_id_valid(token_id):
+    if not User.objects.filter(token_id=token_id):
         raise InvalidTokenId()
 
     return {

@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
+from django.db.models import F
 
 from .utils import *
 from .authentication import generate_hash, generate_token
@@ -7,7 +8,6 @@ from .exceptions import InvalidPost, InvalidTokenId
 from .models import ScheduledDate, User
 from .threading import reset_api_calls_after_15_minutes
 
-# TODO: Check if the api calls number is smaller than 15
 
 # TODO: Delete junk files
 
@@ -127,7 +127,8 @@ def api_schedule(request):
         database_object.name_set.create(name=post_request['company-name'])
         database_object.save()
 
-        increment_user_api_calls(user)
+        user.api_calls = F('api_calls') + 1
+        user.save()
 
         json_response = get_json_response(
             success="true",
