@@ -13,7 +13,7 @@ def reset_api_calls_after_15_minutes():
         user.api_calls = F('api_calls') * 0
         user.save()
 
-    # Timer(60.0 * 15, reset_api_calls_after_15_minutes).start()
+    Timer(60.0 * 15, reset_api_calls_after_15_minutes).start()
 
 
-# reset_api_calls_after_15_minutes()
+reset_api_calls_after_15_minutes()
