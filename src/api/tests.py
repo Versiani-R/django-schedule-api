@@ -312,23 +312,23 @@ class CheckDatabaseHandleTests(TestCase):
         Creating an object in the database with empty name and count, should create an object with default values:
 
         Name: 'Fake Business for tests only.'
-        Count: 1
+        Count: 0
         """
         (_, scheduled_object) = create_scheduled_date()
-        self.assertEqual(scheduled_object.count, 1)
+        self.assertEqual(scheduled_object.count, 0)
 
     def test_handle_database_create_and_update_name_and_value(self):
         """
-        Creating a new object in the database should set the count to 1.
+        Creating a new object in the database should set the count to 0.
 
-        Adding a new object should increase the value to 2.
+        Adding a new object should increase the value to 1.
 
         Updating the name on the database should set the name to the updated name.
         """
 
         scheduled_date_object = create_and_update_scheduled_date()
 
-        self.assertEqual(scheduled_date_object.count, 2)
+        self.assertEqual(scheduled_date_object.count, 1)
         self.assertEqual(scheduled_date_object.name_set.all()[0].name, 'Fake Business for tests only.')
 
     def test_handle_database_creating_5_schedules(self):
@@ -338,8 +338,8 @@ class CheckDatabaseHandleTests(TestCase):
         (first_object, scheduled_date) = create_scheduled_date()
 
         self.assertEqual(first_object[1], True)
-        self.assertEqual(scheduled_date.count, 1)
+        self.assertEqual(scheduled_date.count, 0)
 
-        for i in range(2, 6):
+        for i in range(1, 5):
             scheduled_date = update_scheduled_date()
             self.assertEqual(scheduled_date.count, i)

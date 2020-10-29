@@ -134,7 +134,7 @@ def is_meeting_scheduled_time_available(datetime_object):
         # if they're on the same day
         if date == date_datetime:
 
-            # if they're on the same time ( both hours, and minutes )
+            # if they're on the same time ( both hours and minutes )
             if time == time_datetime:
 
                 count = 3
