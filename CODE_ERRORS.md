@@ -16,3 +16,6 @@ Schedule to the past
 
 # Error code 6:
 Number of meetings scheduled to the day and hour is over {count}
+
+# Error code 7:
+Number of api calls made in 15 minutes is greater than 15. Wait 15 minutes in order to get the api calls back to 0
