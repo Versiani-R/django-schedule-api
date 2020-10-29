@@ -1,3 +1,6 @@
+from django.db.models import F
+from django.db.models import ObjectDoesNotExist
+
 from datetime import datetime
 
 from .models import User, ScheduledDate
@@ -8,6 +11,34 @@ def is_token_id_valid(token_id):
     if User.objects.filter(token_id=token_id):
         return True
     return False
+
+
+def is_date_valid(day, month, year):
+    if len(day) != 2 or len(month) != 2:
+        raise InvalidPost(message='Day and Month must be standardized! Read the "Data" at the official documentation.',
+                          code=2)
+    if len(year) != 4:
+        raise InvalidPost(message='Year must be standardized! Read the "Data" at the official documentation.', code=2)
+
+    if (int(day) < 1 or int(day) > 31) or (int(month) < 1 or int(month) > 12):
+        raise InvalidPost(message='Day or Month value is incorrect! Read the "Data" at the official documentation.',
+                          code=2)
+
+    return True
+
+
+def is_time_valid(hours, minutes):
+    if len(hours) != 2 or len(minutes) != 2:
+        raise InvalidPost(message='Hours and Minutes must be standardized! Read the "Data" at the official '
+                                  'documentation.', code=2)
+    if (int(hours) < 1 or int(hours) > 23) or (int(minutes) < 1 or int(minutes) > 59):
+        raise InvalidPost(message='Hours and Minutes must be standardized! Read the "Data" at the official '
+                                  'documentation.', code=2)
+
+
+def increment_user_api_calls(user):
+    user.api_calls = F('api_calls') + 1
+    user.save()
 
 
 def handle_request_post_data_to_api_schedule(request):
@@ -33,25 +64,12 @@ def handle_request_post_data_to_api_schedule(request):
     month = request.POST['month']
     year = request.POST['year']
 
-    if len(day) != 2 or len(month) != 2:
-        raise InvalidPost(message='Day and Month must be standardized! Read the "Data" at the official documentation.',
-                          code=2)
-    if len(year) != 4:
-        raise InvalidPost(message='Year must be standardized! Read the "Data" at the official documentation.', code=2)
-
-    if 1 > int(day) > 31 or 1 > int(month) > 12:
-        raise InvalidPost(message='Day or Month value is incorrect! Read the "Data" at the official documentation.',
-                          code=2)
+    is_date_valid(day, month, year)
 
     hours = request.POST['hours']
     minutes = request.POST['minutes']
 
-    if len(hours) != 2 or len(minutes) != 2:
-        raise InvalidPost(message='Hours and Minutes must be standardized! Read the "Data" at the official '
-                                  'documentation.', code=2)
-    if 1 > int(hours) > 23 or 1 > int(minutes) > 59:
-        raise InvalidPost(message='Hours and Minutes must be standardized! Read the "Data" at the official '
-                                  'documentation.', code=2)
+    is_time_valid(hours, minutes)
 
     # name of the company for organization's sake
     company_name = request.POST['company-name']
@@ -68,11 +86,12 @@ def handle_request_post_data_to_api_schedule(request):
         'hours': hours,
         'minutes': minutes,
         'company-name': company_name,
+        'token-id': token_id
     }
 
 
 def convert_datetime_string_to_datetime_object(post_request, months):
-    print(f'Testing: {post_request["month"]}')
+    # print(f'Testing: {post_request["month"]}')
     datetime_string = f'{months[int(post_request["month"]) - 1]} {post_request["day"]} {post_request["year"]} ' \
                       f'{post_request["hours"]}:{post_request["minutes"]}'
 
@@ -176,21 +195,27 @@ def is_meeting_scheduled_time_available(datetime_object):
             # if they're on the same time ( both hours, and minutes )
             if sanitized_scheduled_time == sanitized_datetime_object[1]:
 
-                # database_object is the object value retrieved through the database itself
-                database_object = ScheduledDate.objects.select_for_update().get(date=datetime_object)
-
                 count = 3
                 if sanitized_datetime_object[1] <= '11:30:00':
                     count = 5
 
                 # if less than {count} people already scheduled to this time, schedule it normally
-                if database_object.count < count:
-                    print(f'Count value is: {count}')
-                    print(f'Sanitized datetime object is: {sanitized_datetime_object[1]}')
-                    return True, database_object
-
+                if ScheduledDate.objects.select_for_update().get(date=datetime_object).count < count:
+                    # print(f'Count value is: {count}')
+                    # print(f'Sanitized datetime object is: {sanitized_datetime_object[1]}')
+                    return True
                 else:
-                    return False, database_object
+                    return False
+
+    return True
+
+
+def is_datetime_already_on_the_database(datetime_object):
+    try:
+        ScheduledDate.objects.get(date=datetime_object)
+    except ObjectDoesNotExist:
+        return False
+    return True
 
 
 def get_json_response(success, data, error):

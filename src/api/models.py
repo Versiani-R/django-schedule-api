@@ -10,7 +10,7 @@ class ScheduledDate(models.Model):
     Date: day/month/year
     """
     date = models.DateTimeField('scheduled meeting')
-    count = models.IntegerField(default=1, validators=[
+    count = models.IntegerField(default=0, validators=[
         MaxValueValidator(5),
         MinValueValidator(1)
     ])

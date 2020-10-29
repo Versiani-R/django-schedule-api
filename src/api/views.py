@@ -1,15 +1,13 @@
 from django.shortcuts import render
-from django.db.models import F
 from django.http import JsonResponse, HttpResponse
 
 from .utils import *
 from .authentication import generate_hash, generate_token
 from .exceptions import InvalidPost, InvalidTokenId
 from .models import ScheduledDate, User
+from .threading import reset_api_calls_after_15_minutes
 
-
-# TODO: Increment the value of api_calls of the user
-# TODO: Reset the value of api calls after some time
+# TODO: Check if the api calls number is smaller than 15
 
 # TODO: Delete junk files
 
@@ -24,7 +22,6 @@ def register(request):
     return render(request, 'api/register.html')
 
 
-# TODO: Do a few more checks to the email and password
 def handle_register(request):
 
     if ('email' and 'password') not in request.POST:
@@ -108,54 +105,48 @@ def api_schedule(request):
         )
         return JsonResponse(json_response)
 
-    try:
-        (is_available, database_object) = is_meeting_scheduled_time_available(datetime_object)
+    if not is_meeting_scheduled_time_available(datetime_object):
+        json_response = get_json_response(
+            success="false",
+            data={},
+            error={
+                "code": 6,
+                "message": "Number of meetings scheduled to the date and hour is over the allowed number."
+            }
+        )
+        return JsonResponse(json_response)
 
-        if is_available:
-            database_object.count = F('count') + 1
-            database_object.name_set.create(name=post_request['company-name'])
-            database_object.save()
-        else:
-            json_response = get_json_response(
-                success="false",
-                data={},
-                error={
-                    "code": 6,
-                    "message": "Number of meetings scheduled to the date and hour is over the allowed number."
-                }
-            )
-            return JsonResponse(json_response)
-
-    except TypeError:
-        """
-        TypeError occurs when the database_object is empty ( nothing on the database )
-        If that's the case, we need to create a brand new object to an empty database.
-        """
+    if not is_datetime_already_on_the_database(datetime_object):
         ScheduledDate.objects.get_or_create(date=datetime_object)
-        database_object = ScheduledDate.objects.select_for_update().get(date=datetime_object)
+
+    user = User.objects.select_for_update().get(token_id=post_request['token-id'])
+    database_object = ScheduledDate.objects.select_for_update().get(date=datetime_object)
+
+    if user.api_calls < 15:
+        database_object.count = F('count') + 1
         database_object.name_set.create(name=post_request['company-name'])
         database_object.save()
 
-    """
-    No more need to keep track of current time zone.
-    Since USE_TZ is now set to False, and the timezone code
-    is correct ('America/Sao_Paulo'), there isn't need to
-    make the datetime object aware.
-    
-    The code will remain commented for knowledge sake. 
-    """
-    # current_timezone = timezone.get_current_timezone()
-    # print(f'Current timezone: {current_timezone}')
-    # timezone_aware_date = current_timezone.localize(datetime_object)
-    # print(f'Timezone aware date: {timezone_aware_date}')
+        increment_user_api_calls(user)
 
-    json_response = get_json_response(
-        success="true",
-        data={
-            "date": f"{post_request['day']}-{post_request['month']}-{post_request['year']}",
-            "time": f"{post_request['hours']}:{post_request['minutes']}",
-            "company-name": post_request['company-name']
-        },
-        error={}
-    )
-    return JsonResponse(json_response)
+        json_response = get_json_response(
+            success="true",
+            data={
+                "date": f"{post_request['day']}-{post_request['month']}-{post_request['year']}",
+                "time": f"{post_request['hours']}:{post_request['minutes']}",
+                "company-name": post_request['company-name']
+            },
+            error={}
+        )
+        return JsonResponse(json_response)
+
+    else:
+        json_response = get_json_response(
+            success="false",
+            data={},
+            error={
+                "code": 7,
+                "message": "Number of api calls made in 15 minutes is over the allowed quantity."
+            }
+        )
+        return JsonResponse(json_response)
