@@ -24,7 +24,8 @@ def is_time_valid(hours, minutes):
     if len(hours) != 2 or len(minutes) != 2:
         raise InvalidPost(message='Hours and Minutes must be standardized! Read the "Data" at the official '
                                   'documentation.', code=2)
-    if (int(hours) < 1 or int(hours) > 23) or (int(minutes) < 1 or int(minutes) > 59):
+
+    if (int(hours) < 7 or int(hours) > 19) or (int(minutes) != 30 and int(minutes) != 0):
         raise InvalidPost(message='Hours and Minutes must be standardized! Read the "Data" at the official '
                                   'documentation.', code=2)
 
@@ -43,7 +44,7 @@ def handle_request_post_data_to_api_schedule(request):
     Hours: 18
     Minutes: 59
     Company Name: Dr4kk0nnys Inc.
-    Token Id: iu32rh2irhuhasdh8478yq7yasdhjhasduhifjduh123uh12h312jh
+    Token Id: iu32rh2irh3uh3asd1h8478yq7ya1sd1h3j9ha0sa2sd8uh6if00jd7uh123uh12h312jh
     """  # Stupid time-variables ...
     day = request.POST['day']
     month = request.POST['month']
@@ -162,4 +163,29 @@ def get_json_response(success, data, error):
         "success": success,
         "data": data,
         "error": error
+    }
+
+
+def handle_post_request_to_api_time(request):
+    keys = ['day', 'month', 'year', 'token-id']
+    for key in keys:
+        if not request.POST[key]:
+            raise InvalidPost(message="Invalid or Missing Post Data", code=1)
+
+    day = request.POST['day']
+    month = request.POST['month']
+    year = request.POST['year']
+
+    is_date_valid(day, month, year)
+
+    token_id = request.POST['token-id']
+
+    if not User.objects.filter(token_id=token_id):
+        raise InvalidTokenId()
+
+    return {
+        'day': day,
+        'month': month,
+        'year': year,
+        'token-id': token_id
     }
