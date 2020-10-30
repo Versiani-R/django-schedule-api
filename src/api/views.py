@@ -176,6 +176,22 @@ def api_time(request):
         )
         return JsonResponse(json_response)
 
+    # Checking user api calls first, so no ddos attack can be done
+    user = User.objects.select_for_update().get(token_id=post_request['token-id'])
+    if user.api_calls >= 15:
+        json_response = get_json_response(
+            success="false",
+            data={},
+            error={
+                "code": 7,
+                "message": "Number of api calls made in 15 minutes is over the allowed quantity."
+            }
+        )
+        return JsonResponse(json_response)
+
+    user.api_calls = F('api_calls') + 1
+    user.save()
+
     day = post_request['day']
     month = post_request['month']
     year = post_request['year']
