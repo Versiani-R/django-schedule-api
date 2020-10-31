@@ -7,8 +7,9 @@ from .exceptions import InvalidPost, InvalidTokenId
 from .models import ScheduledDate, User
 # from .threading import reset_api_calls_after_15_minutes
 
-
-# TODO: Create pyautogui test for the multiple request at the same time
+from .spreadsheet import *
+# get_user_weekly_metrics('32216007444142488f967168546c00455cbf1164196c4087b9af9cde44b2fde4', 5, 11, 2020)
+get_total_schedules_from_two_accounts('32216007444142488f967168546c00455cbf1164196c4087b9af9cde44b2fde4', 'a808b45dc0e0b589a90766973be95de52b83a92e14aaa4ff19ca7f4b38064729')
 
 
 def index(request):
@@ -140,9 +141,7 @@ def api_schedule(request):
     )
     database_object.save()
 
-    user.schedules_set.create(
-        date_and_time=datetime_object
-    )
+    user.schedules_set.create(date_and_time=datetime_object)
 
     json_response = get_json_response(
         success="true",
