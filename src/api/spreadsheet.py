@@ -50,7 +50,7 @@ def get_user_entire_average_schedule_by_day(token_id):
     newest_date = dates.first().date_and_time
     oldest_date = dates.last().date_and_time
 
-    time_difference = oldest_date - newest_date
+    time_difference = newest_date - oldest_date
 
     print(f'Newest date: {newest_date}')
     print(f'Oldest date: {oldest_date}')
@@ -58,8 +58,8 @@ def get_user_entire_average_schedule_by_day(token_id):
     print(f'Are they equal ? {newest_date == oldest_date}')
 
     if abs(time_difference.days) <= 0:
-        print('The first and last date are the same. Cannot divide by zero.')
-        return
+        print('The first and last date are the same. Cannot divide by zero. Considering time difference as 1.')
+        time_difference += timedelta(days=1)
 
     average = dates.count() / abs(time_difference.days)
 
