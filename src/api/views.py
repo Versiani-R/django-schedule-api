@@ -1,6 +1,5 @@
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
-from django.db.models import F
 
 from .utils import *
 from .authentication import generate_hash, generate_token
@@ -130,11 +129,20 @@ def api_schedule(request):
     if not is_datetime_already_on_the_database(datetime_object):
         ScheduledDate.objects.get_or_create(date=datetime_object)
 
+    user = User.objects.select_for_update().get(token_id=post_request['token-id'])
     database_object = ScheduledDate.objects.select_for_update().get(date=datetime_object)
 
     database_object.count = F('count') + 1
-    database_object.name_set.create(name=post_request['company-name'])
+    database_object.information_set.create(
+        name=post_request['company-name'],
+        token_id=post_request['token-id'],
+        email=user.email
+    )
     database_object.save()
+
+    user.schedules_set.create(
+        date_and_time=datetime_object
+    )
 
     json_response = get_json_response(
         success="true",

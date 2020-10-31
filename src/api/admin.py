@@ -4,18 +4,29 @@ Pass for the admin:
 """
 from django.contrib import admin
 
-from .models import ScheduledDate, Name, User
+from .models import ScheduledDate, Information, User, Schedules
 
 
-class NameInLine(admin.StackedInline):
-    model = Name
+class InformationInLine(admin.StackedInline):
+    model = Information
     extra = 1
 
 
 class ScheduledDateAdmin(admin.ModelAdmin):
     fields = ['date', 'count']
-    inlines = [NameInLine]
+    inlines = [InformationInLine]
+
+
+class UserPastSchedulesInLine(admin.StackedInline):
+    model = Schedules
+    extra = 1
+
+
+class UserAdmin(admin.ModelAdmin):
+    fields = ['email', 'password', 'token_id', 'api_calls']
+    inlines = [UserPastSchedulesInLine]
+    search_fields = ['email']
 
 
 admin.site.register(ScheduledDate, ScheduledDateAdmin)
-admin.site.register(User)
+admin.site.register(User, UserAdmin)
