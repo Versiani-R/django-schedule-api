@@ -1,9 +1,9 @@
-from django.db.models import ObjectDoesNotExist
+from django.db.models import ObjectDoesNotExist, F
 
 from datetime import datetime
 
 from .models import User, ScheduledDate
-from .exceptions import InvalidPost, InvalidTokenId
+from .exceptions import InvalidPost, InvalidTokenId, InvalidApiCall
 
 
 def is_date_valid(day, month, year):
@@ -189,3 +189,13 @@ def handle_post_request_to_api_time(request):
         'year': year,
         'token-id': token_id
     }
+
+
+def increase_user_api_calls_if_is_smaller_than_15(token_id):
+    # Checking user api calls first, so no ddos attack can be done
+    user = User.objects.select_for_update().get(token_id=token_id)
+    if user.api_calls >= 15:
+        raise InvalidApiCall()
+
+    user.api_calls = F('api_calls') + 1
+    user.save()

@@ -6,3 +6,7 @@ class InvalidPost(Exception):
 
 class InvalidTokenId(Exception):
     pass
+
+
+class InvalidApiCall(Exception):
+    pass

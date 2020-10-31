@@ -74,9 +74,9 @@ def api_schedule(request):
         ]
     )
 
-    # Checking user api calls first, so no ddos attack can be done
-    user = User.objects.select_for_update().get(token_id=post_request['token-id'])
-    if user.api_calls >= 15:
+    try:
+        increase_user_api_calls_if_is_smaller_than_15(post_request['token-id'])
+    except InvalidApiCall:
         json_response = get_json_response(
             success="false",
             data={},
@@ -86,9 +86,6 @@ def api_schedule(request):
             }
         )
         return JsonResponse(json_response)
-
-    user.api_calls = F('api_calls') + 1
-    user.save()
 
     """
     For documentation of the following checks, please refer to the comments on the functions:
@@ -176,9 +173,9 @@ def api_time(request):
         )
         return JsonResponse(json_response)
 
-    # Checking user api calls first, so no ddos attack can be done
-    user = User.objects.select_for_update().get(token_id=post_request['token-id'])
-    if user.api_calls >= 15:
+    try:
+        increase_user_api_calls_if_is_smaller_than_15(post_request['token-id'])
+    except InvalidApiCall:
         json_response = get_json_response(
             success="false",
             data={},
@@ -188,9 +185,6 @@ def api_time(request):
             }
         )
         return JsonResponse(json_response)
-
-    user.api_calls = F('api_calls') + 1
-    user.save()
 
     day = post_request['day']
     month = post_request['month']
