@@ -9,7 +9,16 @@ from .models import ScheduledDate, User
 
 from .spreadsheet import *
 # get_user_weekly_metrics('32216007444142488f967168546c00455cbf1164196c4087b9af9cde44b2fde4', 5, 11, 2020)
-get_total_schedules_from_two_accounts('32216007444142488f967168546c00455cbf1164196c4087b9af9cde44b2fde4', 'a808b45dc0e0b589a90766973be95de52b83a92e14aaa4ff19ca7f4b38064729')
+# get_total_schedules_from_two_accounts(
+#   '32216007444142488f967168546c00455cbf1164196c4087b9af9cde44b2fde4',
+#   'a808b45dc0e0b589a90766973be95de52b83a92e14aaa4ff19ca7f4b38064729'
+# )
+# get_user_entire_average_schedule_by_day('32216007444142488f967168546c00455cbf1164196c4087b9af9cde44b2fde4')
+get_user_monthly_average_schedule_by_day(
+    '32216007444142488f967168546c00455cbf1164196c4087b9af9cde44b2fde4',
+    2020,
+    11
+)
 
 
 def index(request):

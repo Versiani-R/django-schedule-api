@@ -5,8 +5,7 @@ stuff. It does involve programming, but it's more related to marketing.
 Note: This code is not accessible through normal runtime
 """
 
-from datetime import date
-from datetime import timedelta
+from datetime import date, timedelta, datetime
 
 from .models import User
 
@@ -37,3 +36,49 @@ def get_total_schedules_from_two_accounts(first_account_token_id, second_account
 
     print(f'Total schedules of the first user:  \n{first_user.schedules_set.all()}')
     print(f'Total schedules of the second user: \n{second_user.schedules_set.all()}')
+
+
+# This function gets the average of the newest and oldest schedule, so it's not as precise as a monthly average.
+def get_user_entire_average_schedule_by_day(token_id):
+    user = get_user(token_id)
+    dates = user.schedules_set.all().order_by('date_and_time')
+
+    if dates.count() < 2:
+        print('Not enough schedules to create a metric')
+        return
+
+    newest_date = dates.first().date_and_time
+    oldest_date = dates.last().date_and_time
+
+    time_difference = oldest_date - newest_date
+
+    print(f'Newest date: {newest_date}')
+    print(f'Oldest date: {oldest_date}')
+    print(f'Time difference: {time_difference}')
+    print(f'Are they equal ? {newest_date == oldest_date}')
+
+    if abs(time_difference.days) <= 0:
+        print('The first and last date are the same. Cannot divide by zero.')
+        return
+
+    average = dates.count() / abs(time_difference.days)
+
+    print(f'Average is: {average}')
+
+
+# This function gets the average of the newest and oldest schedule of the month
+def get_user_monthly_average_schedule_by_day(token_id, year, month):
+    user = get_user(token_id)
+
+    start_date = date(year, month, 1)
+    end_date = start_date + timedelta(days=30)
+
+    dates = user.schedules_set.filter(
+        date_and_time__date__gte=start_date,
+        date_and_time__date__lte=end_date
+    )
+
+    average = dates.count() / 30
+
+    print(f'Average is: {average}')
+
