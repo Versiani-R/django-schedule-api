@@ -7,7 +7,7 @@ from .exceptions import InvalidPost, InvalidTokenId
 from .models import ScheduledDate
 # from .threading import reset_api_calls_after_15_minutes
 
-# from .spreadsheet import *
+from .spreadsheet import *
 # get_user_weekly_metrics('32216007444142488f967168546c00455cbf1164196c4087b9af9cde44b2fde4', 5, 11, 2020)
 # get_total_schedules_from_two_accounts(
 #   '32216007444142488f967168546c00455cbf1164196c4087b9af9cde44b2fde4',
@@ -19,13 +19,13 @@ from .models import ScheduledDate
 #     2020,
 #     11
 # )
-# call_three_users_at_the_same_time(
-#     '2020-11-05 11:30:00',
-#     '2020-11-05 14:30:00',
-#     '32216007444142488f967168546c00455cbf1164196c4087b9af9cde44b2fde4',
-#     'a808b45dc0e0b589a90766973be95de52b83a92e14aaa4ff19ca7f4b38064729',
-#     '4ef38a7062482d6f782f1db5ac729bf5d3ef97b626b3df45135f3756ce85d3b4'
-# )
+call_three_users_at_the_same_time(
+    '2020-11-05 11:30:00',
+    '2020-11-05 14:30:00',
+    '32216007444142488f967168546c00455cbf1164196c4087b9af9cde44b2fde4',
+    'a808b45dc0e0b589a90766973be95de52b83a92e14aaa4ff19ca7f4b38064729',
+    '4ef38a7062482d6f782f1db5ac729bf5d3ef97b626b3df45135f3756ce85d3b4'
+)
 
 
 def index(request):
