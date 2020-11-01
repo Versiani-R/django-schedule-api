@@ -4,7 +4,7 @@ from django.http import JsonResponse, HttpResponse
 from .utils import *
 from .authentication import generate_hash, generate_token
 from .exceptions import InvalidPost, InvalidTokenId
-from .models import ScheduledDate, User
+from .models import ScheduledDate
 # from .threading import reset_api_calls_after_15_minutes
 
 from .spreadsheet import *
@@ -14,10 +14,16 @@ from .spreadsheet import *
 #   'a808b45dc0e0b589a90766973be95de52b83a92e14aaa4ff19ca7f4b38064729'
 # )
 # get_user_entire_average_schedule_by_day('32216007444142488f967168546c00455cbf1164196c4087b9af9cde44b2fde4')
-get_user_monthly_average_schedule_by_day(
+# get_user_monthly_average_schedule_by_day(
+#     '32216007444142488f967168546c00455cbf1164196c4087b9af9cde44b2fde4',
+#     2020,
+#     11
+# )
+call_three_users_at_the_same_time(
+    '2020-11-05 11:30:00',
     '32216007444142488f967168546c00455cbf1164196c4087b9af9cde44b2fde4',
-    2020,
-    11
+    'a808b45dc0e0b589a90766973be95de52b83a92e14aaa4ff19ca7f4b38064729',
+    '4ef38a7062482d6f782f1db5ac729bf5d3ef97b626b3df45135f3756ce85d3b4'
 )
 
 

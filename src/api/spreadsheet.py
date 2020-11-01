@@ -82,3 +82,17 @@ def get_user_monthly_average_schedule_by_day(token_id, year, month):
 
     print(f'Average is: {average}')
 
+
+# This function is just a test, I'm just trying to see if I can call two users with a single database query
+def call_three_users_at_the_same_time(time, first_user_token_id, second_user_token_id, third_user_token_id):
+
+    # Getting three users with only one query
+    users = User.objects.filter(token_id__in=[first_user_token_id, second_user_token_id, third_user_token_id])
+
+    for i in range(users.count()):
+        # If the date is already scheduled. AKA if the 'surgeon' doesn't have time
+        if users[i].schedules_set.filter(date_and_time=time):
+            print('The crew is occupied! Sorry <3')
+            return
+
+    print('The crew is all available!')
