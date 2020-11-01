@@ -26,6 +26,7 @@ class Information(models.Model):
 
 
 class User(models.Model):
+    # information = models.ForeignKey(Information, on_delete=models.CASCADE)
     email = models.EmailField()
     password = models.CharField(max_length=256)
     token_id = models.CharField(max_length=256)

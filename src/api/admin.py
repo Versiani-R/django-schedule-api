@@ -24,7 +24,7 @@ class UserPastSchedulesInLine(admin.StackedInline):
 
 class UserAdmin(admin.ModelAdmin):
     fields = ['email', 'password', 'token_id', 'api_calls']
-    inlines = [UserPastSchedulesInLine]
+    # inlines = [UserPastSchedulesInLine]
     search_fields = ['email']
 
 
