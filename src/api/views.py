@@ -1,9 +1,18 @@
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
+from django.db.models import F
 
-from .utils import *
+from .utils.api_schedule import handle_request_post_data_to_api_schedule, increase_user_api_calls_if_is_smaller_than_15
+from .utils.api_time import handle_post_request_to_api_time
+from .utils.exceptions import InvalidPost, InvalidTokenId, InvalidApiCall
+from .utils.json_response import get_json_response
+from .utils.conversions import convert_datetime_string_to_datetime_object
+from .utils.validations import was_meeting_scheduled_to_a_saturday_or_sunday, \
+    was_meeting_scheduled_to_the_past, \
+    is_meeting_scheduled_time_available, \
+    is_datetime_already_on_the_database
+
 from .authentication import generate_hash, generate_token
-from .exceptions import InvalidPost, InvalidTokenId
 from .models import ScheduledDate
 # from .threading import reset_api_calls_after_15_minutes
 

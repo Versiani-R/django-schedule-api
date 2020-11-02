@@ -5,7 +5,7 @@ stuff. It does involve programming, but it's more related to marketing.
 Note: This code is not accessible through normal runtime
 """
 
-from datetime import date, timedelta, datetime
+from datetime import date, timedelta
 
 from .models import User
 
