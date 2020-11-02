@@ -24,8 +24,7 @@
   <component name="ChangeListManager">
     <list default="true" id="1fbd401d-e081-44a8-948d-aa719f953944" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CODE_ERRORS.md" beforeDir="false" afterPath="$PROJECT_DIR$/CODE_ERRORS.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LICENSE" beforeDir="false" afterPath="$PROJECT_DIR$/LICENSE" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DOCUMENTATION.md" beforeDir="false" afterPath="$PROJECT_DIR$/DOCUMENTATION.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -193,9 +192,9 @@
       <screen x="0" y="27" width="1280" height="997" />
     </state>
     <state x="365" y="261" width="540" height="524" key="StructurePopup/0.27.1280.997@0.27.1280.997" timestamp="1603811270415" />
-    <state x="606" y="245" width="672" height="678" key="search.everywhere.popup" timestamp="1603977293159">
+    <state x="606" y="245" width="672" height="678" key="search.everywhere.popup" timestamp="1604167337383">
       <screen x="0" y="27" width="1280" height="997" />
     </state>
-    <state x="606" y="245" width="672" height="678" key="search.everywhere.popup/0.27.1280.997@0.27.1280.997" timestamp="1603977293159" />
+    <state x="606" y="245" width="672" height="678" key="search.everywhere.popup/0.27.1280.997@0.27.1280.997" timestamp="1604167337383" />
   </component>
 </project>
