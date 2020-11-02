@@ -23,17 +23,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1fbd401d-e081-44a8-948d-aa719f953944" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/api/utils/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/api/utils/api_schedule.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/api/utils/api_time.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/api/utils/conversions.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/api/utils/exceptions.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/api/utils/json_response.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/exceptions.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/utils.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/utils/validations.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/utils/validations.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/views.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
