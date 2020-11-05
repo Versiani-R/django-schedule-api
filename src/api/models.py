@@ -31,12 +31,12 @@ class Information(models.Model):
     scheduled_date = models.ForeignKey(ScheduledDate, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
-    name = models.CharField(max_length=200)
-    token_id = models.CharField(max_length=256)
-    email = models.EmailField()
+    # name = models.CharField(max_length=200)
+    # token_id = models.CharField(max_length=256)
+    # email = models.EmailField()
 
     def __str__(self):
-        return self.name
+        return ''
 
 
 # class Schedules(models.Model):
