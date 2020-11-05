@@ -13,10 +13,10 @@ from .utils.validations import was_meeting_scheduled_to_a_saturday_or_sunday, \
     is_datetime_already_on_the_database
 
 from .authentication import generate_hash, generate_token
-from .models import ScheduledDate
+from .models import ScheduledDate, User
 from .threading import reset_api_calls_after_15_minutes
 
-from .spreadsheet import *
+# from .spreadsheet import *
 
 
 def index(request):
