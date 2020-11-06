@@ -52,7 +52,7 @@ def handle_request_post_data_to_api_schedule(request):
     }
 
 
-def increase_user_api_calls_if_is_smaller_than_15(token_id):
+def increase_api_calls(token_id):
     # Checking user api calls first, so no ddos attack can be done
     user = User.objects.select_for_update().get(token_id=token_id)
     if user.api_calls >= 15:

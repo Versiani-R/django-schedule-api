@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from api.models import Register, ScheduledDate
+from api.models import Register, TimeList
 
 
 class RegisterSerializer(serializers.HyperlinkedModelSerializer):
@@ -9,7 +9,7 @@ class RegisterSerializer(serializers.HyperlinkedModelSerializer):
         fields = ['id', 'email', 'password']
 
 
-class ScheduleSerializer(serializers.HyperlinkedModelSerializer):
+class TimeListSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
-        model = ScheduledDate
-        fields = ['id', 'date', 'count']
+        model = TimeList
+        fields = ['id', 'day', 'month', 'year', 'token_id']

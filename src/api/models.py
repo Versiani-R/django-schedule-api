@@ -47,3 +47,15 @@ class Register(models.Model):
 
     def __str__(self):
         return str(self.email)
+
+
+class TimeList(models.Model):
+    day = models.CharField(max_length=2)
+    month = models.CharField(max_length=2)
+    year = models.CharField(max_length=4)
+    token_id = models.CharField(max_length=256)
+
+    objects = models.Manager()
+
+    def __str__(self):
+        return '-'.join([self.day, self.month, self.year])

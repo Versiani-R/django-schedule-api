@@ -1,17 +1,18 @@
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from django.db.models import F
+from django.forms.models import model_to_dict
 
 from rest_framework import mixins, generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
 
-from api.serializers import RegisterSerializer, ScheduleSerializer
+from api.serializers import RegisterSerializer, TimeListSerializer
 
-from api.utils.validations import is_date_valid
+from api.utils.validations import is_date_valid, is_token_id_valid
 
-from .utils.api_schedule import handle_request_post_data_to_api_schedule, increase_user_api_calls_if_is_smaller_than_15
+from .utils.api_schedule import handle_request_post_data_to_api_schedule, increase_api_calls
 from .utils.api_time import handle_post_request_to_api_time
 from .utils.exceptions import InvalidPost, InvalidTokenId, InvalidApiCall
 from .utils.json_response import get_json_response
@@ -58,38 +59,33 @@ class RegisterView(APIView):
             return Response(get_json_response("false", {}, {"code": 3, "message": "Invalid or Incorrect credentials. Weak credentials."}))
 
         [hashed_password, token_id] = [generate_hash(serializer.data['password']), generate_token(email, password)]
-
         User.objects.get_or_create(email=email, password=hashed_password, token_id=token_id)
-
         return Response(get_json_response("true", {"email": email, "token-id": token_id}, {}))
 
 
-class ScheduleApiView(mixins.ListModelMixin, generics.GenericAPIView):
-    """
-    Return the scheduled meetings of the day passed. GET request.
-    Create a schedule through the POST request.
-    """
-    serializer_class = ScheduleSerializer
+class TimeListView(APIView):
+    def post(self, request, pk=None, format=None):
+        serializer = TimeListSerializer(data=request.data)
 
-    def get_queryset(self):
-        [year, month, day] = [item for item in self.kwargs.values()]
-
-        return ScheduledDate.objects.filter(date__startswith='-'.join([year, month, day]))
-    
-    def get(self, request, *args, **kwargs):
-        [year, month, day] = [item for item in self.kwargs.values()]
+        if not serializer.is_valid():
+            return Response(get_json_response("false", {}, {"code": 1, "message": "Invalid or Incorrect data on the post request."}))
+        
+        [day, month, year, token_id] = serializer.data.values()
 
         try:
             is_date_valid(day, month, year)
-        except InvalidPost as invalid_post:
-            return Response(get_json_response("false", {}, {"code": 2, "message": invalid_post.message}))
+            is_token_id_valid(token_id)
+            increase_api_calls(token_id)
+        except InvalidPost as e:
+            return Response(e.format_invalid_post())
 
-        return self.list(request, *args, **kwargs)
+        except InvalidTokenId as e:
+            return Response(e.format_invalid_token_id())
 
+        except InvalidApiCall as e:
+            return Response(e.format_invalid_api_call())
 
-    # def get(self, request, test, pk=None, format=None):
-    #     print(test)
-    #     return JsonResponse({"Yeay": "true"})
+        return Response(get_json_response("true", ScheduledDate.objects.filter(date__startswith='-'.join([year, month, day])).values(), {}))
 
 
 def api_schedule(request):
@@ -124,7 +120,7 @@ def api_schedule(request):
     )
 
     try:
-        increase_user_api_calls_if_is_smaller_than_15(post_request['token-id'])
+        increase_api_calls(post_request['token-id'])
     except InvalidApiCall:
         json_response = get_json_response(
             success="false",
@@ -222,7 +218,7 @@ def api_time(request):
         return JsonResponse(json_response)
 
     try:
-        increase_user_api_calls_if_is_smaller_than_15(post_request['token-id'])
+        increase_api_calls(post_request['token-id'])
     except InvalidApiCall:
         json_response = get_json_response(
             success="false",
