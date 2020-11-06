@@ -2,6 +2,11 @@ from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from django.db.models import F
 
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
+from api.serializers import RegisterSerializer
+
 from .utils.api_schedule import handle_request_post_data_to_api_schedule, increase_user_api_calls_if_is_smaller_than_15
 from .utils.api_time import handle_post_request_to_api_time
 from .utils.exceptions import InvalidPost, InvalidTokenId, InvalidApiCall
@@ -24,30 +29,35 @@ def index(request):
     return render(request, 'api/index.html')
 
 
-def register(request):
-    return render(request, 'api/register.html')
+class RegisterView(APIView):
+    """
+    Return the register template if is a GET request.
+    Handle the register if is a POST request.
+    """
+    def get(self, request):
+        return render(request, 'api/register.html')
+    
+    def post(self, request, pk=None, format=None):
+        serializer = RegisterSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response(get_json_response("false", {}, {"code": 1, "message": "Invalid or Incorrect data on the post request."}))
 
+        [email, password] = [item for item in serializer.data.values()]
 
-def handle_register(request):
+        # Checking if the email is already registered.
+        if User.objects.filter(email=email):
+            return Response(get_json_response("false", {}, {"code": 2, "message": "Invalid or Incorrect credentials. Email already registered."}))
 
-    if ('email' and 'password') not in request.POST:
-        return HttpResponse('Invalid post data.')
+        # Checking if the password is strong
+        if not len(password) > 5:
+            return Response(get_json_response("false", {}, {"code": 3, "message": "Invalid or Incorrect credentials. Weak credentials."}))
 
-    email = request.POST['email']
-    password = request.POST['password']
+        [hashed_password, token_id] = [generate_hash(serializer.data['password']), generate_token(email, password)]
 
-    if User.objects.filter(email=email):
-        return HttpResponse('Email already registered.')
+        User.objects.get_or_create(email=email, password=hashed_password, token_id=token_id)
 
-    if len(password) < 6:
-        return HttpResponse('Password too short. It must be at least 6 characters long.')
-
-    hashed_password = generate_hash(password)
-    token_id = generate_token(email, password)
-
-    User.objects.get_or_create(email=email, password=hashed_password, token_id=token_id)
-
-    return render(request, 'api/register_success.html', {"token_id": token_id})
+        return Response(get_json_response("true", {"email": email, "token-id": token_id}, {}))
 
 
 def api_schedule(request):

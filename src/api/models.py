@@ -39,9 +39,11 @@ class Information(models.Model):
         return ''
 
 
-# class Schedules(models.Model):
-#     user = models.ForeignKey(User, on_delete=models.CASCADE)
-#     date_and_time = models.DateTimeField('scheduled meetings')
+class Register(models.Model):
+    email = models.EmailField()
+    password = models.CharField(max_length=256)
 
-#     def __str__(self):
-#         return str(self.date_and_time)
+    objects = models.Manager()
+
+    def __str__(self):
+        return str(self.email)
