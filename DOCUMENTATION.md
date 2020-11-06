@@ -25,7 +25,7 @@ There you can not only see the code of the error and what it means, but also a m
 As previously said, the api has a limit of 15 calls per 15 minutes.  
 That being said, you can:
 * Do 15 calls in 1 minute
-* Do 1 call per minutes, for 15 minutes.  
+* Do 1 call per minute, for 15 minutes.  
 The api calls values gets reset every fifteen minutes. So you should be able to call the api 60 times an hour.  
 
 ## Json Value Return
@@ -151,7 +151,8 @@ The api will always be expecting the same object:
     "token-id": "186a87fda690d7fb5bc66a963875968b5d31f771751f6b5f0f5602f135dc9225"
 }
 ```
-**NOTE: To register and get a token-id, go to the 'register/' page**  
+**NOTE: To register and get a token-id, go to the 'register/' page**
+
 # Time
 While scheduling, it's really important to know which times are available.  
 Otherwise, you would've been just guessing which times are not fully scheduled yet.  
