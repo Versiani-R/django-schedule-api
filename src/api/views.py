@@ -24,10 +24,6 @@ from .utils.validations import was_meeting_scheduled_to_a_saturday_or_sunday, \
 
 from .authentication import generate_hash, generate_token
 from .models import ScheduledDate, User
-<<<<<<< HEAD
-=======
-
->>>>>>> django-rest-integration
 # from .threading import reset_api_calls_after_15_minutes
 
 # from .spreadsheet import *
