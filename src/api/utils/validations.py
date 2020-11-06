@@ -2,8 +2,14 @@ from django.db.models import ObjectDoesNotExist
 
 from datetime import datetime
 
-from .exceptions import InvalidPost
-from ..models import ScheduledDate
+from .exceptions import InvalidPost, InvalidTokenId
+from ..models import ScheduledDate, User
+
+
+def is_token_id_valid(token_id):
+    if not User.objects.filter(token_id=token_id):
+        raise InvalidTokenId()
+    return True
 
 
 def is_date_valid(day, month, year):
