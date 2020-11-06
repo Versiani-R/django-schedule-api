@@ -2,7 +2,7 @@ from django.db.models import ObjectDoesNotExist
 
 from datetime import datetime
 
-from .exceptions import InvalidPost, InvalidTokenId
+from .exceptions import *
 from ..models import ScheduledDate, User
 
 
@@ -36,23 +36,26 @@ def is_time_valid(hours, minutes):
                                   'documentation.', code=2)
 
 
-def was_meeting_scheduled_to_a_saturday_or_sunday(datetime_object):
+def is_meeting_date_available(datetime_object):
+    """
+    Check if the meeting was scheduled to a saturday or sunday.
+    Check if the meeting was scheduled to the past.
+    """
+    
     # get the week day of the datetime_object date
     # monday = 0, tuesday = 1, ..., saturday = 5, sunday = 6
     datetime_weekday = datetime.weekday(datetime_object)
 
     if datetime_weekday >= 5:
-        return True
-    return False
+        raise InvalidDay()
+    
 
-
-def was_meeting_scheduled_to_the_past(datetime_object):
     current_date = datetime.now()
 
     if current_date > datetime_object:  # AKA, if it's in the past
-        return True
+        raise InvalidDate()
 
-    return False
+    return True
 
 
 def is_meeting_scheduled_time_available(datetime_object):
@@ -95,7 +98,7 @@ def is_meeting_scheduled_time_available(datetime_object):
                 # if less than {count} people already scheduled to this time, schedule it normally
                 if ScheduledDate.objects.select_for_update().get(date=datetime_object).count < count:
                     return True
-                return False
+                raise InvalidTime()
 
     return True
 
@@ -104,5 +107,5 @@ def is_datetime_already_on_the_database(datetime_object):
     try:
         ScheduledDate.objects.get(date=datetime_object)
     except ObjectDoesNotExist:
-        return False
+        raise InvalidObject()
     return True

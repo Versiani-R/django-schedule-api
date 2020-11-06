@@ -8,23 +8,19 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 
-from api.serializers import RegisterSerializer, TimeListSerializer
+from api.serializers import RegisterSerializer, TimeListSerializer, ScheduleApiSerializer
 
-from api.utils.validations import is_date_valid, is_token_id_valid
+from api.utils.validations import *
 
 from .utils.api_schedule import handle_request_post_data_to_api_schedule, increase_api_calls
 from .utils.api_time import handle_post_request_to_api_time
 from .utils.exceptions import InvalidPost, InvalidTokenId, InvalidApiCall
 from .utils.json_response import get_json_response
 from .utils.conversions import convert_datetime_string_to_datetime_object
-from .utils.validations import was_meeting_scheduled_to_a_saturday_or_sunday, \
-    was_meeting_scheduled_to_the_past, \
-    is_meeting_scheduled_time_available, \
-    is_datetime_already_on_the_database
+from .utils.validations import is_meeting_scheduled_time_available, is_datetime_already_on_the_database
 
 from .authentication import generate_hash, generate_token
 from .models import ScheduledDate, User
-
 # from .threading import reset_api_calls_after_15_minutes
 
 # from .spreadsheet import *
@@ -88,105 +84,56 @@ class TimeListView(APIView):
         return Response(get_json_response("true", ScheduledDate.objects.filter(date__startswith='-'.join([year, month, day])).values(), {}))
 
 
-def api_schedule(request):
-    try:
-        post_request = handle_request_post_data_to_api_schedule(request)
+class ScheduleApi(APIView):
+    def post(self, request, pk=None, format=None):
+        serializer = ScheduleApiSerializer(data=request.data)
 
-    except InvalidPost as invalid_post:
-        json_response = get_json_response(
-            success="false",
-            data={},
-            error={
-                "code": invalid_post.code,
-                "message": invalid_post.message
-            }
-        )
-        return JsonResponse(json_response)
+        if not serializer.is_valid():
+            return Response(get_json_response("false", {}, {"code": 1, "message": "Invalid or Incorrect data on the post request."}))
+        
+        [day, month, year, hours, minutes, company_name, token_id] = serializer.data.values()
 
-    except InvalidTokenId:
-        json_response = get_json_response(
-            success="false",
-            data={},
-            error={
-                "code": 3,
-                "message": "Invalid Token Id."
-            }
-        )
-        return JsonResponse(json_response)
+        # TODO: The code bellow repeats, make a function on the utils folder for it.
+        try:
+            is_date_valid(day, month, year)
+            is_token_id_valid(token_id)
+            increase_api_calls(token_id)
+        except InvalidPost as e:
+            return Response(e.format_invalid_post())
 
-    datetime_object = convert_datetime_string_to_datetime_object(post_request, months=[
-            'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-        ]
-    )
+        except InvalidTokenId as e:
+            return Response(e.format_invalid_token_id())
 
-    try:
-        increase_api_calls(post_request['token-id'])
-    except InvalidApiCall:
-        json_response = get_json_response(
-            success="false",
-            data={},
-            error={
-                "code": 7,
-                "message": "Number of api calls made in 15 minutes is over the allowed quantity."
-            }
-        )
-        return JsonResponse(json_response)
+        except InvalidApiCall as e:
+            return Response(e.format_invalid_api_call())
 
-    """
-    For documentation of the following checks, please refer to the comments on the functions:
-    **Note**: They were moved to the utils.py file!
-        * was_meeting_scheduled_to_a_saturday_or_sunday
-        * was_meeting_scheduled_to_the_past
-        * is_meeting_scheduled_time_available
-    """
-    if was_meeting_scheduled_to_a_saturday_or_sunday(datetime_object):
-        json_response = get_json_response(
-            success="false",
-            data={},
-            error={
-                "code": 4,
-                "message": "Cannot Schedule a meeting to a saturday or sunday."
-            }
-        )
-        return JsonResponse(json_response)
+        try:
+            datetime_object = convert_datetime_string_to_datetime_object(day, month, year, hours, minutes, months=[
+                'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+            ])
 
-    if was_meeting_scheduled_to_the_past(datetime_object):
-        json_response = get_json_response(
-            success="false",
-            data={},
-            error={
-                "code": 5,
-                "message": "Cannot Schedule a meeting to the past."
-            }
-        )
-        return JsonResponse(json_response)
+            is_meeting_date_available(datetime_object)
+            is_meeting_scheduled_time_available(datetime_object)
+            is_datetime_already_on_the_database(datetime_object)
+        
+        except ValueError:
+            return Response(InvalidPost("Invalid or Incorrect data on the post request.", 1).format_invalid_post())
 
-    if not is_meeting_scheduled_time_available(datetime_object):
-        json_response = get_json_response(
-            success="false",
-            data={},
-            error={
-                "code": 6,
-                "message": "Number of meetings scheduled to the date and hour is over the allowed number."
-            }
-        )
-        return JsonResponse(json_response)
+        except InvalidDay as e:
+            return Response(e.format_invalid_day())
 
-    if not is_datetime_already_on_the_database(datetime_object):
-        ScheduledDate.objects.get_or_create(date=datetime_object)
+        except InvalidDate as e:
+            return Response(e.format_invalid_date())
 
-    database_object = ScheduledDate.objects.select_for_update().get(date=datetime_object)
+        except InvalidTime as e:
+            return Response(e.format_invalid_time())
 
-    database_object.count = F('count') + 1
-    database_object.save()
+        except InvalidObject:
+            ScheduledDate.objects.get_or_create(date=datetime_object)
 
-    json_response = get_json_response(
-        success="true",
-        data={
-            "date": f"{post_request['day']}-{post_request['month']}-{post_request['year']}",
-            "time": f"{post_request['hours']}:{post_request['minutes']}",
-            "company-name": post_request['company-name']
-        },
-        error={}
-    )
-    return JsonResponse(json_response)
+        database_object = ScheduledDate.objects.select_for_update().get(date=datetime_object)
+        database_object.count = F('count') + 1
+        database_object.information_set.create(user=User.objects.get(token_id=token_id))
+        database_object.save()
+
+        return Response({"Yeay": "success"})
