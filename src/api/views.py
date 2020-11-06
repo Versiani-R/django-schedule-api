@@ -2,10 +2,14 @@ from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from django.db.models import F
 
+from rest_framework import mixins, generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from api.serializers import RegisterSerializer
+
+from api.serializers import RegisterSerializer, ScheduleSerializer
+
+from api.utils.validations import is_date_valid
 
 from .utils.api_schedule import handle_request_post_data_to_api_schedule, increase_user_api_calls_if_is_smaller_than_15
 from .utils.api_time import handle_post_request_to_api_time
@@ -60,8 +64,35 @@ class RegisterView(APIView):
         return Response(get_json_response("true", {"email": email, "token-id": token_id}, {}))
 
 
-def api_schedule(request):
+class ScheduleApiView(mixins.ListModelMixin, generics.GenericAPIView):
+    """
+    Return the scheduled meetings of the day passed. GET request.
+    Create a schedule through the POST request.
+    """
+    serializer_class = ScheduleSerializer
 
+    def get_queryset(self):
+        [year, month, day] = [item for item in self.kwargs.values()]
+
+        return ScheduledDate.objects.filter(date__startswith='-'.join([year, month, day]))
+    
+    def get(self, request, *args, **kwargs):
+        [year, month, day] = [item for item in self.kwargs.values()]
+
+        try:
+            is_date_valid(day, month, year)
+        except InvalidPost as invalid_post:
+            return Response(get_json_response("false", {}, {"code": 2, "message": invalid_post.message}))
+
+        return self.list(request, *args, **kwargs)
+
+
+    # def get(self, request, test, pk=None, format=None):
+    #     print(test)
+    #     return JsonResponse({"Yeay": "true"})
+
+
+def api_schedule(request):
     try:
         post_request = handle_request_post_data_to_api_schedule(request)
 
