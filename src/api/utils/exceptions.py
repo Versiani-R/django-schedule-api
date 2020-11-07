@@ -1,9 +1,12 @@
-class InvalidPost(Exception):
+class InvalidException():
+    """
+    Invalid Exception is the mother class of all exceptions related to this api.
+    """
     def __init__(self, message, code):
-        self.code = code
         self.message = message
+        self.code = code
 
-    def format_invalid_post(self):
+    def display_invalid_exception(self):
         return {
             "success": "false",
             "data": {},
@@ -14,73 +17,41 @@ class InvalidPost(Exception):
         }
 
 
-class InvalidTokenId(Exception):
-    def format_invalid_token_id(self):
-        return {
-            "success": "false",
-            "data": {},
-            "error": {
-                "code": 3,
-                "message": "Invalid Token Id."
-            }
-        }
-    
-
-class InvalidApiCall(Exception):
-    def format_invalid_api_call(self):
-        return {
-                "success": "false",
-                "data": {},
-                "error": {
-                    "code": 7,
-                    "message": "Number of api calls made in 15 minutes is greater than 15."
-                }
-            }
+class InvalidPost(Exception, InvalidException):
+    def __init__(self, message, code):
+        self.message = message
+        self.code = code
 
 
-class InvalidDay(Exception):
-    def format_invalid_day(self):
-        return {
-            "success": "false",
-            "data": {},
-            "error": {
-                "code": 4,
-                "message": "Cannot Schedule a meeting to a saturday or sunday."
-            }
-        }
+class InvalidTokenId(Exception, InvalidException):
+    def __init__(self):
+        self.message = "Invalid Token Id."
+        self.code = 3
 
 
-class InvalidDate(Exception):
-    def format_invalid_date(self):
-        return {
-            "success": "false",
-            "data": {},
-            "error": {
-                "code": 5,
-                "message": "Cannot Schedule a meeting to the past."
-            }
-        }
+class InvalidDay(Exception, InvalidException):
+    def __init__(self):
+        self.message = "Cannot Schedule a meeting to a saturday or sunday."
+        self.code = 4
 
 
-class InvalidTime(Exception):
-    def format_invalid_time(self):
-        return {
-            "success": "false",
-            "data": {},
-            "error": {
-                "code": 6,
-                "message": "Number of meetings scheduled to the date and hour is over the allowed number."
-            }
-        }
+class InvalidDate(Exception, InvalidException):
+    def __init__(self):
+        self.message = "Cannot Schedule a meeting to the past."
+        self.code = 5
+
+
+class InvalidTime(Exception, InvalidException):
+    def __init__(self):
+        self.message = "Number of meetings scheduled to the date and hour is over the allowed number."
+        self.code = 6
+
+
+class InvalidApiCall(Exception, InvalidException):
+    def __init__(self):
+        self.message = "Number of api calls made in 15 minutes is greater than 15."
+        self.code = 7
 
 
 class InvalidObject(Exception):
-    def format_invalid_object(self):
-        return {
-            "success": "false",
-            "data": {},
-            "error": {
-                "code": 6,
-                "message": "Number of meetings scheduled to the date and hour is over the allowed number."
-            }
-        }
+    pass

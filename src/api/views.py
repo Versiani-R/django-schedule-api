@@ -4,6 +4,7 @@ from django.db.models import F
 from django.forms.models import model_to_dict
 
 from rest_framework import mixins, generics
+from rest_framework.viewsets import ViewSet
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
@@ -30,19 +31,19 @@ def index(request):
     return render(request, 'api/index.html')
 
 
-class RegisterView(APIView):
+class RegisterViewSet(ViewSet):
     """
     Return the register template if is a GET request.
     Handle the register if is a POST request.
     """
-    def get(self, request):
+    def list(self, request, format=None):
         return render(request, 'api/register.html')
     
-    def post(self, request, pk=None, format=None):
+    def create(self, request, format=None):
         serializer = RegisterSerializer(data=request.data)
         
         if not serializer.is_valid():
-            return Response(get_json_response("false", {}, {"code": 1, "message": "Invalid or Incorrect data on the post request."}))
+            return Response(InvalidPost("Invalid or Incorrect data on the post request.", 1).display_invalid_exception())
 
         [email, password] = [item for item in serializer.data.values()]
 
@@ -54,18 +55,22 @@ class RegisterView(APIView):
         if not len(password) > 5:
             return Response(get_json_response("false", {}, {"code": 3, "message": "Invalid or Incorrect credentials. Weak credentials."}))
 
-        [hashed_password, token_id] = [generate_hash(serializer.data['password']), generate_token(email, password)]
+        [hashed_password, token_id] = [generate_hash(password), generate_token(email, password)]
         User.objects.get_or_create(email=email, password=hashed_password, token_id=token_id)
-        return Response(get_json_response("true", {"email": email, "token-id": token_id}, {}))
+        return Response(get_json_response("true", {"email": email, "token_id": token_id}, {}))
 
 
-class TimeListView(APIView):
-    def post(self, request, pk=None, format=None):
+class ScheduleApiViewSet(ViewSet):
+    """
+    List all the schedule meetings to the day.
+    Create a new schedule meeting  to the day.
+    """
+    def list(self, request, pk=None, format=None):
         serializer = TimeListSerializer(data=request.data)
 
         if not serializer.is_valid():
-            return Response(get_json_response("false", {}, {"code": 1, "message": "Invalid or Incorrect data on the post request."}))
-        
+            return Response(InvalidPost("Invalid or Incorrect data on the get request.", 1).display_invalid_exception())
+
         [day, month, year, token_id] = serializer.data.values()
 
         try:
@@ -73,23 +78,21 @@ class TimeListView(APIView):
             is_token_id_valid(token_id)
             increase_api_calls(token_id)
         except InvalidPost as e:
-            return Response(e.format_invalid_post())
+            return Response(e.display_invalid_exception())
 
         except InvalidTokenId as e:
-            return Response(e.format_invalid_token_id())
+            return Response(e.display_invalid_exception())
 
         except InvalidApiCall as e:
-            return Response(e.format_invalid_api_call())
+            return Response(e.display_invalid_exception())
 
         return Response(get_json_response("true", ScheduledDate.objects.filter(date__startswith='-'.join([year, month, day])).values(), {}))
 
-
-class ScheduleApi(APIView):
-    def post(self, request, pk=None, format=None):
+    def create(self, request, pk=None, format=None):
         serializer = ScheduleApiSerializer(data=request.data)
 
         if not serializer.is_valid():
-            return Response(get_json_response("false", {}, {"code": 1, "message": "Invalid or Incorrect data on the post request."}))
+            return Response(InvalidPost("Invalid or Incorrect data on the post request.", 1).display_invalid_exception())
         
         [day, month, year, hours, minutes, company_name, token_id] = serializer.data.values()
 
@@ -99,13 +102,13 @@ class ScheduleApi(APIView):
             is_token_id_valid(token_id)
             increase_api_calls(token_id)
         except InvalidPost as e:
-            return Response(e.format_invalid_post())
+            return Response(e.display_invalid_exception())
 
         except InvalidTokenId as e:
-            return Response(e.format_invalid_token_id())
+            return Response(e.display_invalid_exception())
 
         except InvalidApiCall as e:
-            return Response(e.format_invalid_api_call())
+            return Response(e.display_invalid_exception())
 
         try:
             datetime_object = convert_datetime_string_to_datetime_object(day, month, year, hours, minutes, months=[
@@ -117,16 +120,16 @@ class ScheduleApi(APIView):
             is_datetime_already_on_the_database(datetime_object)
         
         except ValueError:
-            return Response(InvalidPost("Invalid or Incorrect data on the post request.", 1).format_invalid_post())
+            return Response(InvalidPost("Invalid or Incorrect data on the post request.", 1).display_invalid_exception())
 
         except InvalidDay as e:
-            return Response(e.format_invalid_day())
+            return Response(e.display_invalid_exception())
 
         except InvalidDate as e:
-            return Response(e.format_invalid_date())
+            return Response(e.display_invalid_exception())
 
         except InvalidTime as e:
-            return Response(e.format_invalid_time())
+            return Response(e.display_invalid_exception())
 
         except InvalidObject:
             ScheduledDate.objects.get_or_create(date=datetime_object)
@@ -136,4 +139,8 @@ class ScheduleApi(APIView):
         database_object.information_set.create(user=User.objects.get(token_id=token_id))
         database_object.save()
 
-        return Response({"Yeay": "success"})
+        return Response(get_json_response("true", {
+            "date": '-'.join([day, month, year]),
+            "time": f"{hours}:{minutes}",
+            "company_name": company_name
+        }, {}))

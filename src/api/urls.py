@@ -1,20 +1,16 @@
 from django.urls import path, include
 
+from rest_framework.routers import DefaultRouter
+
 from api import views
+
+
+router = DefaultRouter()
+router.register(r'register', views.RegisterViewSet, basename='register')
+router.register(r'api', views.ScheduleApiViewSet, basename='api')
 
 
 urlpatterns = [
     path('', views.index, name='index'),
-
-    path('register/', views.RegisterView.as_view(), name='register'),
-    # path('register/', views.register, name='register'),
-    # path('register/user/', views.handle_register, name='handle_register'),
-
-    path('api/', views.ScheduleApi.as_view(), name='schedule'),
-
-    path('api/time/', views.TimeListView.as_view(), name='time'),
-
-
-    # path('api/schedule/', views.api_schedule, name='schedule'),
-    # path('api/time/', views.api_time, name='time'),
+    path('', include(router.urls)),
 ]
