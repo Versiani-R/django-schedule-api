@@ -6,7 +6,7 @@ The overall goal is to be precise, and easy to understand.
 The project has a simple core: You call the api, and it returns an object.  
 Within this object, you can see if it failed or if it succeed.  
 If it succeed, then you should be able to clearly see the object body, with well thought parameter names, and values.  
-If it failed, then you should be able to see the code of the error, and understand it's cause reading the message body.
+If it failed, then you should be able to see the code of the error, and understand it's cause by reading the message body.
 
 # Overview
 Although it has a simple promise. It does has it's rules:  
@@ -15,11 +15,19 @@ The api has a limit call of 15, and this number is reset every 15 minutes, givin
 Other key-points are also presented in the rest of the documentation.    
 
 # Authentication
-In order to authenticate to the api, go to the /register/ page or on the index of the application, and click on the 'Register now' button.
+In order to authenticate to the api, you have two options:
+1. Send a post request to register with the following object:
+```json
+{
+    "email": "youremail@example.com",
+    "password": "yourpassword"
+}
+```
+2. Go to the register/ page and register manually.
 
 # Error codes
-There are a bunch of errors that can occur while using the api, to understand more of them, I have a separate file called CODES_ERRORS.md.  
-There you can not only see the code of the error and what it means, but also a message displaying a human-readable info.  
+There are a bunch of errors that can occur while using the api, to understand more of them, there is a separate file called CODES_ERRORS.md.  
+There, you can not only see the error code and what it means, but also a message displaying a human-readable info.  
 
 # Rate Limit
 As previously said, the api has a limit of 15 calls per 15 minutes.  
@@ -78,7 +86,7 @@ Will always contain:
     * **NOTE: Day and Month are not 0 index**
 1. Time **(Hours:Minutes)**
     * **NOTE: Hours and Minutes are always 2 characters long.**
-    * **NOTE: Hours cannot be greater than 19 or smaller than 7. Minutes can be either 0 or 30.**
+    * **NOTE: Hours will never be greater than 19 or smaller than 7. Minutes will be either 0 or 30.**
         * **Examples:** 16:30, 17:00, 19:00, 08:30, 10:00, 7:00, 19:30
 1. Company Name
 
@@ -89,7 +97,7 @@ Will always contain:
     "success": "true",  
     "data": {  
         "date": "18-10-2020",  
-        "time": "16:20",  
+        "time": "16:00",  
         "company_name": "Dr4kk0nnys Inc."   
     },  
     "error": {}  
@@ -157,7 +165,7 @@ The api will always be expecting the same object:
 While scheduling, it's really important to know which times are available.  
 Otherwise, you would've been just guessing which times are not fully scheduled yet.  
 Luckily the api takes care of it.  
-Doing a post request to the ***api/time/*** url with the following parameters, returns
+Doing a get request to the ***api/*** with the following parameters, returns
 the times that are already scheduled.  
 **To do a time request, you must first be authenticated**  
 
@@ -175,7 +183,7 @@ The time api call will be expecting the following parameters:
     "day": "20",
     "month": "06",
     "year": "2020",
-    "token-id": "jh32jkh43jh23jh3j1h3jk21hj3asj3dha3c8zx7c87vxb7bgf97fss1ab2ja1"
+    "token-id": "3h2bhasdy78hu4a23n4kjb2hy8ndnfsh2g1yt289032"
 }
 ```
 
@@ -184,7 +192,7 @@ The time-availability will always return the same object with the same parameter
 ```json
 {
     "success": "boolean_value",
-    "data": {},
+    "data": [{}],
     "error": {}
 }
 ```
@@ -192,16 +200,16 @@ The time-availability will always return the same object with the same parameter
 
 ### Data
 The only difference between the two objects ( time-availability and api-schedule ) is the data object.
-The data object in the time-availability return is an object that holds an array of QuerySet.  
+The data object in the time-availability is an object that holds an array of Objects.  
 
 ### Example
 Calling the api
 ```json
 {
-    "day": "30",
-    "month": "10",
+    "day": "09",
+    "month": "11",
     "year": "2020",
-    "token-id": "423h234j2h34kj234jkh24329s8dsa97das89d1sad1hb12hb"
+    "token-id": "423h234j2h34k234kh24329s8dsa97das89d1sad1hb12hb"
 }
 ```
 Api response
@@ -209,13 +217,22 @@ Api response
 {
     "success": "true",
     "data": [
-        "2020-10-30 19:30:00: 1",
-        "2020-10-30 19:00:00: 2"
+        {
+            "id": 20,
+            "date": "2020-11-09T08:00:00",
+            "count": 5
+        },
+        {
+            "id": 21,
+            "date": "2020-11-09T11:30:00",
+            "count": 1
+        }
     ],
     "error": {}
 }
 ```  
-**NOTE:** The value after the ':' is the amount of schedules to that day and time.  
+Here we can see that at the day 11 of the month 11 of the year 2020, there is two schedules. The first one beeing full, at 8 am, and the other one having only one schedule at 11:30 am.   
+**NOTE:** The count value is the amount of schedules to that day and time.  
 The amount of schedules is 3 if the time is greater than 11:30.  
 The amount of schedules is 5 if the time is smaller than 11:30.  
 
