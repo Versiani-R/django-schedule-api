@@ -1,27 +1,22 @@
 from django.shortcuts import render
-from django.http import JsonResponse, HttpResponse
 from django.db.models import F
-from django.forms.models import model_to_dict
 
-from rest_framework import mixins, generics
 from rest_framework.viewsets import ViewSet
-from rest_framework.views import APIView
 from rest_framework.response import Response
-
 
 from api.serializers import RegisterSerializer, TimeListSerializer, ScheduleApiSerializer
 
-from api.utils.validations import *
+from api.utils.validations import is_date_and_time_valid, is_datetime_already_on_the_database, is_meeting_date_available
+from api.utils.validations import is_meeting_scheduled_time_available, is_token_id_valid
 
-from .utils.api_schedule import handle_request_post_data_to_api_schedule, increase_api_calls
-from .utils.api_time import handle_post_request_to_api_time
-from .utils.exceptions import InvalidPost, InvalidTokenId, InvalidApiCall
-from .utils.json_response import get_json_response
-from .utils.conversions import convert_datetime_string_to_datetime_object
-from .utils.validations import is_meeting_scheduled_time_available, is_datetime_already_on_the_database
+from api.utils.exceptions import *
 
-from .authentication import generate_hash, generate_token
-from .models import ScheduledDate, User
+from api.utils.schedule_api import increase_api_calls
+from api.utils.json_response import get_json_response
+from api.utils.conversions import convert_datetime_string_to_datetime_object
+
+from api.authentication import generate_hash, generate_token
+from api.models import ScheduledDate, User
 # from .threading import reset_api_calls_after_15_minutes
 
 # from .spreadsheet import *
@@ -33,8 +28,8 @@ def index(request):
 
 class RegisterViewSet(ViewSet):
     """
-    Return the register template if is a GET request.
-    Handle the register if is a POST request.
+    Return the register template.
+    Handle the register.
     """
     def list(self, request, format=None):
         return render(request, 'api/register.html')
@@ -65,16 +60,9 @@ class ScheduleApiViewSet(ViewSet):
     List all the schedule meetings to the day.
     Create a new schedule meeting  to the day.
     """
-    def list(self, request, pk=None, format=None):
-        serializer = TimeListSerializer(data=request.data)
-
-        if not serializer.is_valid():
-            return Response(InvalidPost("Invalid or Incorrect data on the get request.", 1).display_invalid_exception())
-
-        [day, month, year, token_id] = serializer.data.values()
-
+    def validate_basic_information(self, day, month, year, hours, minutes, token_id):
         try:
-            is_date_valid(day, month, year)
+            is_date_and_time_valid(day, month, year, hours, minutes)
             is_token_id_valid(token_id)
             increase_api_calls(token_id)
         except InvalidPost as e:
@@ -85,6 +73,23 @@ class ScheduleApiViewSet(ViewSet):
 
         except InvalidApiCall as e:
             return Response(e.display_invalid_exception())
+        
+        except:
+            return Response(InvalidError().display_invalid_exception())
+        
+        return None
+
+    def list(self, request, pk=None, format=None):
+        serializer = TimeListSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(InvalidPost("Invalid or Incorrect data on the get request.", 1).display_invalid_exception())
+
+        [day, month, year, token_id] = serializer.data.values()
+        
+        validation = self.validate_basic_information(day, month, year, '08', '00', token_id)
+        if validation:
+            return validation
 
         return Response(get_json_response("true", ScheduledDate.objects.filter(date__startswith='-'.join([year, month, day])).values(), {}))
 
@@ -96,19 +101,9 @@ class ScheduleApiViewSet(ViewSet):
         
         [day, month, year, hours, minutes, company_name, token_id] = serializer.data.values()
 
-        # TODO: The code bellow repeats, make a function on the utils folder for it.
-        try:
-            is_date_valid(day, month, year)
-            is_token_id_valid(token_id)
-            increase_api_calls(token_id)
-        except InvalidPost as e:
-            return Response(e.display_invalid_exception())
-
-        except InvalidTokenId as e:
-            return Response(e.display_invalid_exception())
-
-        except InvalidApiCall as e:
-            return Response(e.display_invalid_exception())
+        validation = self.validate_basic_information(day, month, year, hours, minutes, token_id)
+        if validation:
+            return validation
 
         try:
             datetime_object = convert_datetime_string_to_datetime_object(day, month, year, hours, minutes, months=[

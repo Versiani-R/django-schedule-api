@@ -2,8 +2,8 @@ from django.db.models import ObjectDoesNotExist
 
 from datetime import datetime
 
-from .exceptions import *
-from ..models import ScheduledDate, User
+from api.utils.exceptions import InvalidTokenId, InvalidPost, InvalidDate, InvalidDay, InvalidObject, InvalidTime
+from api.models import ScheduledDate, User
 
 
 def is_token_id_valid(token_id):
@@ -12,7 +12,7 @@ def is_token_id_valid(token_id):
     return True
 
 
-def is_date_valid(day, month, year):
+def is_date_and_time_valid(day, month, year, hours, minutes):
     if len(day) != 2 or len(month) != 2:
         raise InvalidPost(message='Day and Month must be standardized! Read the "Data" at the official documentation.',
                           code=2)
@@ -23,10 +23,6 @@ def is_date_valid(day, month, year):
         raise InvalidPost(message='Day or Month value is incorrect! Read the "Data" at the official documentation.',
                           code=2)
 
-    return True
-
-
-def is_time_valid(hours, minutes):
     if len(hours) != 2 or len(minutes) != 2:
         raise InvalidPost(message='Hours and Minutes must be standardized! Read the "Data" at the official '
                                   'documentation.', code=2)
@@ -34,6 +30,8 @@ def is_time_valid(hours, minutes):
     if (int(hours) < 7 or int(hours) > 19) or (int(minutes) != 30 and int(minutes) != 0):
         raise InvalidPost(message='Hours and Minutes must be standardized! Read the "Data" at the official '
                                   'documentation.', code=2)
+
+    return True
 
 
 def is_meeting_date_available(datetime_object):

@@ -1,4 +1,4 @@
-class InvalidException():
+class _InvalidException():
     """
     Invalid Exception is the mother class of all exceptions related to this api.
     """
@@ -17,40 +17,46 @@ class InvalidException():
         }
 
 
-class InvalidPost(Exception, InvalidException):
+class InvalidPost(Exception, _InvalidException):
     def __init__(self, message, code):
         self.message = message
         self.code = code
 
 
-class InvalidTokenId(Exception, InvalidException):
+class InvalidTokenId(Exception, _InvalidException):
     def __init__(self):
         self.message = "Invalid Token Id."
         self.code = 3
 
 
-class InvalidDay(Exception, InvalidException):
+class InvalidDay(Exception, _InvalidException):
     def __init__(self):
         self.message = "Cannot Schedule a meeting to a saturday or sunday."
         self.code = 4
 
 
-class InvalidDate(Exception, InvalidException):
+class InvalidDate(Exception, _InvalidException):
     def __init__(self):
         self.message = "Cannot Schedule a meeting to the past."
         self.code = 5
 
 
-class InvalidTime(Exception, InvalidException):
+class InvalidTime(Exception, _InvalidException):
     def __init__(self):
         self.message = "Number of meetings scheduled to the date and hour is over the allowed number."
         self.code = 6
 
 
-class InvalidApiCall(Exception, InvalidException):
+class InvalidApiCall(Exception, _InvalidException):
     def __init__(self):
         self.message = "Number of api calls made in 15 minutes is greater than 15."
         self.code = 7
+
+
+class InvalidError(Exception, _InvalidException):
+    def __init__(self):
+        self.message = "Unknown error."
+        self.code = 0
 
 
 class InvalidObject(Exception):
