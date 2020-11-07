@@ -1,6 +1,6 @@
 from threading import Timer
 
-from .models import User
+from api.models import User
 
 from django.db.models import F
 

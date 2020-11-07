@@ -2,22 +2,22 @@ from django.test import TestCase
 
 from datetime import datetime
 
-from .models import ScheduledDate, User
+from api.models import ScheduledDate, User
 
 
 def register_user():
     User.objects.get_or_create(email='blank@gmail.com', password='12345', token_id='token')
 
 
-def get_json_object(year, hours, minutes="20"):
+def get_json_object(year, hours, minutes="30"):
     return {
         "day": "16",
         "month": "10",
         "year": year,
         "hours": hours,
         "minutes": minutes,
-        "company-name": "Dr4kk0 Inc.",
-        "token-id": "token"
+        "company_name": "Dr4kk0 Inc.",
+        "token_id": "token"
     }
 
 
@@ -36,7 +36,7 @@ class CheckRequestHandleTests(TestCase):
         }
         """
         register_user()
-        response = self.client.post('/api/schedule/', get_json_object("2021", "16"))
+        response = self.client.post('/api/', get_json_object("2021", "16"))
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json().get('success'), "false")
@@ -59,7 +59,7 @@ class CheckRequestHandleTests(TestCase):
         }
         """
         register_user()
-        response = self.client.post('/api/schedule/', get_json_object("2006", "16"))
+        response = self.client.post('/api/', get_json_object("2006", "16"))
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json().get('success'), "false")
@@ -77,19 +77,19 @@ class CheckRequestHandleTests(TestCase):
             "success": "true",
             "data": {
                 "date": "16-10-2065",
-                "time": "16:20",
+                "time": "16:30",
                 "company-name": "Dr4kk0 Inc."
             },
             "error": {}
         }
         """
         register_user()
-        response = self.client.post('/api/schedule/', get_json_object("2065", "16"))
+        response = self.client.post('/api/', get_json_object("2065", "16"))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json().get('success'), "true")
         self.assertEqual(response.json().get('data').get('date'), "16-10-2065")
-        self.assertEqual(response.json().get('data').get('time'), "16:20")
-        self.assertEqual(response.json().get('data').get('company-name'), "Dr4kk0 Inc.")
+        self.assertEqual(response.json().get('data').get('time'), "16:30")
+        self.assertEqual(response.json().get('data').get('company_name'), "Dr4kk0 Inc.")
         self.assertEqual(response.json().get('error'), {})
 
     def test_handle_post_request_data_with_five_scheduled_values_before_11_30(self):
@@ -101,7 +101,7 @@ class CheckRequestHandleTests(TestCase):
             "success": "true",
             "data": {
                 "date": "16-10-2065",
-                "time": "11:20",
+                "time": "10:30",
                 "company-name": "Dr4kk0 Inc."
             },
             "error": {}
@@ -111,13 +111,13 @@ class CheckRequestHandleTests(TestCase):
         register_user()
 
         for i in range(5):
-            response = self.client.post('/api/schedule/', get_json_object("2065", "11"))
+            response = self.client.post('/api/', get_json_object("2065", "10"))
 
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json().get('success'), "true")
             self.assertEqual(response.json().get('data').get('date'), "16-10-2065")
-            self.assertEqual(response.json().get('data').get('time'), "11:20")
-            self.assertEqual(response.json().get('data').get('company-name'), "Dr4kk0 Inc.")
+            self.assertEqual(response.json().get('data').get('time'), "10:30")
+            self.assertEqual(response.json().get('data').get('company_name'), "Dr4kk0 Inc.")
             self.assertEqual(response.json().get('error'), {})
 
     def test_handle_post_request_data_with_five_scheduled_values_at_11_30(self):
@@ -138,13 +138,13 @@ class CheckRequestHandleTests(TestCase):
         register_user()
 
         for i in range(5):
-            response = self.client.post('/api/schedule/', get_json_object("2065", "11", "30"))
+            response = self.client.post('/api/', get_json_object("2065", "11", "30"))
 
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json().get('success'), "true")
             self.assertEqual(response.json().get('data').get('date'), "16-10-2065")
             self.assertEqual(response.json().get('data').get('time'), "11:30")
-            self.assertEqual(response.json().get('data').get('company-name'), "Dr4kk0 Inc.")
+            self.assertEqual(response.json().get('data').get('company_name'), "Dr4kk0 Inc.")
             self.assertEqual(response.json().get('error'), {})
 
     def test_handle_post_request_data_with_three_scheduled_values_after_11_30(self):
@@ -156,7 +156,7 @@ class CheckRequestHandleTests(TestCase):
             "success": "true",
             "data": {
                 "date": "16-10-2065",
-                "time": "12:20",
+                "time": "12:30",
                 "company-name": "Dr4kk0 Inc."
             },
             "error": {}
@@ -165,13 +165,13 @@ class CheckRequestHandleTests(TestCase):
         register_user()
 
         for i in range(3):
-            response = self.client.post('/api/schedule/', get_json_object("2065", "12"))
+            response = self.client.post('/api/', get_json_object("2065", "12"))
 
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json().get('success'), "true")
             self.assertEqual(response.json().get('data').get('date'), "16-10-2065")
-            self.assertEqual(response.json().get('data').get('time'), "12:20")
-            self.assertEqual(response.json().get('data').get('company-name'), "Dr4kk0 Inc.")
+            self.assertEqual(response.json().get('data').get('time'), "12:30")
+            self.assertEqual(response.json().get('data').get('company_name'), "Dr4kk0 Inc.")
             self.assertEqual(response.json().get('error'), {})
 
     def test_handle_post_request_data_with_five_scheduled_values_after_11_30(self):
@@ -191,16 +191,16 @@ class CheckRequestHandleTests(TestCase):
         register_user()
 
         for i in range(3):
-            response = self.client.post('/api/schedule/', get_json_object("2065", "12"))
+            response = self.client.post('/api/', get_json_object("2065", "12"))
 
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json().get('success'), "true")
             self.assertEqual(response.json().get('data').get('date'), "16-10-2065")
-            self.assertEqual(response.json().get('data').get('time'), "12:20")
-            self.assertEqual(response.json().get('data').get('company-name'), "Dr4kk0 Inc.")
+            self.assertEqual(response.json().get('data').get('time'), "12:30")
+            self.assertEqual(response.json().get('data').get('company_name'), "Dr4kk0 Inc.")
             self.assertEqual(response.json().get('error'), {})
 
-        response = self.client.post('/api/schedule/', get_json_object("2065", "12"))
+        response = self.client.post('/api/', get_json_object("2065", "12"))
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json().get('success'), "false")
@@ -225,16 +225,16 @@ class CheckRequestHandleTests(TestCase):
         register_user()
 
         for i in range(5):
-            response = self.client.post('/api/schedule/', get_json_object("2065", "11"))
+            response = self.client.post('/api/', get_json_object("2065", "10"))
 
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json().get('success'), "true")
             self.assertEqual(response.json().get('data').get('date'), "16-10-2065")
-            self.assertEqual(response.json().get('data').get('time'), "11:20")
-            self.assertEqual(response.json().get('data').get('company-name'), "Dr4kk0 Inc.")
+            self.assertEqual(response.json().get('data').get('time'), "10:30")
+            self.assertEqual(response.json().get('data').get('company_name'), "Dr4kk0 Inc.")
             self.assertEqual(response.json().get('error'), {})
 
-        response = self.client.post('/api/schedule/', get_json_object("2065", "11"))
+        response = self.client.post('/api/', get_json_object("2065", "10"))
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json().get('success'), "false")
@@ -264,9 +264,11 @@ def create_and_update_scheduled_date():
     # updating the new one, since it already exists
     new_scheduled_date = ScheduledDate.objects.select_for_update().get(date=datetime_object)
     new_scheduled_date.count += 1
-    new_scheduled_date.name_set.create(name='Fake Business for tests only.')
-    new_scheduled_date.save()
 
+    new_user = User.objects.create(email='test@example.com', password='12345', token_id='token')
+    new_scheduled_date.information_set.create(user=new_user)
+    
+    new_scheduled_date.save()
     scheduled_date_object = ScheduledDate.objects.get(date=datetime_object)
 
     return scheduled_date_object
@@ -279,7 +281,10 @@ def update_scheduled_date():
 
     new_scheduled_date = ScheduledDate.objects.select_for_update().get(date=datetime_object)
     new_scheduled_date.count += 1
-    new_scheduled_date.name_set.create(name='Fake Business for tests only.')
+
+    new_user = User.objects.create(email='test@example.com', password='12345', token_id='token')
+    new_scheduled_date.information_set.create(user=new_user)
+    
     new_scheduled_date.save()
 
     scheduled_date_object = ScheduledDate.objects.get(date=datetime_object)
@@ -329,7 +334,7 @@ class CheckDatabaseHandleTests(TestCase):
         scheduled_date_object = create_and_update_scheduled_date()
 
         self.assertEqual(scheduled_date_object.count, 1)
-        self.assertEqual(scheduled_date_object.name_set.all()[0].name, 'Fake Business for tests only.')
+        self.assertEqual(scheduled_date_object.information_set.all()[0].user.email, 'test@example.com')
 
     def test_handle_database_creating_5_schedules(self):
         """
