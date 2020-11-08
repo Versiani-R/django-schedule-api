@@ -18,4 +18,4 @@ Schedule to the past
 Number of meetings scheduled to the day and hour is over {count}
 
 # Error code 7:
-Number of api calls made in 15 minutes is greater than 15. Wait 15 minutes in order to get the api calls back to 0
+Number of api calls is equal to 0. In order to keep using the api, you must buy more api calls.
