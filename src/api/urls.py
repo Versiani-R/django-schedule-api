@@ -8,6 +8,7 @@ from api import views
 router = DefaultRouter()
 router.register(r'register', views.RegisterViewSet, basename='register')
 router.register(r'api', views.ScheduleApiViewSet, basename='api')
+router.register(r'calls', views.ApiCallsViewSet, basename='calls')
 
 
 urlpatterns = [

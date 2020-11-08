@@ -49,7 +49,7 @@ class InvalidTime(Exception, _InvalidException):
 
 class InvalidApiCall(Exception, _InvalidException):
     def __init__(self):
-        self.message = "Number of api calls made in 15 minutes is greater than 15."
+        self.message = "Number of api calls is equal to 0. In order to keep using the api, you must buy more api calls."
         self.code = 7
 
 

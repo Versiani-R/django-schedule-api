@@ -4,23 +4,25 @@ from django.db.models import F
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 
-from api.serializers import RegisterSerializer, TimeListSerializer, ScheduleApiSerializer
+from api.serializers import RegisterSerializer, TimeListSerializer, ScheduleApiSerializer, ApiCallsSerializer
 
 from api.utils.validations import is_date_and_time_valid, is_datetime_already_on_the_database, is_meeting_date_available
 from api.utils.validations import is_meeting_scheduled_time_available, is_token_id_valid
 
 from api.utils.exceptions import *
 
-from api.utils.schedule_api import increase_api_calls
+from api.utils.api_calls import decrease_api_calls
 from api.utils.json_response import get_json_response
 from api.utils.conversions import convert_datetime_string_to_datetime_object
 
 from api.authentication import generate_hash, generate_token
 from api.models import ScheduledDate, User
-# from .threading import reset_api_calls_after_15_minutes
 
-# from .spreadsheet import *
+# from api.spreadsheet import *
 
+
+# TODO: Make a 'buy' to reset function ( the user must buy the credits to reset it's api calls number )
+# TODO: Create a 'logistic way' to convert credits to api calls ( $10 = 10 api calls ? )
 
 def index(request):
     return render(request, 'api/index.html')
@@ -64,7 +66,7 @@ class ScheduleApiViewSet(ViewSet):
         try:
             is_date_and_time_valid(day, month, year, hours, minutes)
             is_token_id_valid(token_id)
-            increase_api_calls(token_id)
+            decrease_api_calls(token_id)
         except InvalidPost as e:
             return Response(e.display_invalid_exception())
 
@@ -138,4 +140,61 @@ class ScheduleApiViewSet(ViewSet):
             "date": '-'.join([day, month, year]),
             "time": f"{hours}:{minutes}",
             "company_name": company_name
+        }, {}))
+
+
+class ApiCallsViewSet(ViewSet):
+    """
+    List  the number of api calls of a certain account
+    Reset the number of api calls of a certain account
+    """
+    def list(self, request, pk=None, format=None):
+        serializer = ApiCallsSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(InvalidPost("Invalid or Incorrect data on the post request.", 1).display_invalid_exception())
+
+        user = User.objects.filter(token_id=serializer.data['token_id'])
+
+        # Checking if the token id is valid
+        if not user:
+            return Response(InvalidTokenId().display_invalid_exception())
+
+        return Response(get_json_response("true", {
+            "api_calls": user.first().api_calls
+        }, {}))
+
+    def create(self, request, pk=None, format=None):
+        serializer = ApiCallsSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(InvalidPost("Invalid or Incorrect data on the post request.", 1).display_invalid_exception())
+        
+        try:
+            api_credits = serializer.data['api_credits']
+        except KeyError:
+            return Response(InvalidPost("Invalid or Incorrect data on the post request. Missing or Incorrect api credits value.", 1).display_invalid_exception())
+
+        """
+        Api credits will be the value in dollars to be increased in the api calls.
+        Ideally, this part would require some authentication and payment methods. I have neither of those.
+        Keep in mind that in the real world, in a real api, this part would've been crazy complex.
+        Since I'm skipping the authentication and payment parts, it only comes down to actually increase the
+        api credits to the api_calls.
+
+        1  api_credits = $1   = api_calls + 1
+        50 api_credits = $50  = api_calls + 50
+        """
+        user = User.objects.filter(token_id=serializer.data['token_id']).first()
+
+        # This variable is for information purpouses, it's being saved here and not bellow the rest of the code
+        # to only use one call on the database. Same reason why I'm not calling the decrease_api_credits function.
+        api_calls = user.api_calls + int(api_credits)
+
+        user.api_calls = F('api_calls') + int(api_credits)
+        user.save()
+
+        return Response(get_json_response("true", {
+            "api_credits": api_credits,
+            "remaining_api_calls": api_calls
         }, {}))

@@ -70,3 +70,13 @@ class ScheduleApi(models.Model):
 
     def __str__(self):
         return self.company_name
+
+
+class ApiCall(models.Model):
+    token_id = models.CharField(max_length=256)
+    api_credits = models.IntegerField(default=0)
+
+    objects = models.Manager()
+
+    def __str__(self):
+        return self.token_id
