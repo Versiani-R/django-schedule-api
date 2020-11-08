@@ -11,7 +11,7 @@ If it failed, then you should be able to see the code of the error, and understa
 # Overview
 Although it has a simple promise. It does has it's rules:  
 For example, the date object is always in the day-month-year format.  
-The api has a limit call of 15, and this number is reset every 15 minutes, giving a limit of 1 api call every minute.  
+The api has a limit call and this number only gets reset if you do a post request to the calls/ route.  
 Other key-points are also presented in the rest of the documentation.    
 
 # Authentication
@@ -30,11 +30,24 @@ There are a bunch of errors that can occur while using the api, to understand mo
 There, you can not only see the error code and what it means, but also a message displaying a human-readable info.  
 
 # Rate Limit
-As previously said, the api has a limit of 15 calls per 15 minutes.  
-That being said, you can:
-* Do 15 calls in 1 minute
-* Do 1 call per minute, for 15 minutes.  
-The api calls values gets reset every fifteen minutes. So you should be able to call the api 60 times an hour.  
+As previously said, the api has a limit of api calls.  
+This imitates the real world, where paid api's have a limit of calls, and if you surpass this limit, you have to pay for more usage.  
+The starting limit is 0 ( you can't do any api calls at all after you register ).  
+To earn more api calls ( aka more api usage ) you must do the following:
+* Send a post request to `calls/` with the following object:
+```json
+{
+    "token_id": "12usdjdfh3njn23239k3m21shzbn312n5445h2j32",
+    "api_credits": 40
+}
+```
+**Note**: The api credits simulate real money. In the real world, 1 api_credits = $1. But, since it's a basic api, I didn't bother to implement a payment confirmation method, or any payment checks in general. And for so, you can simply do the post request, and the api will automatically increase your api calls.  
+
+# Paths
+All the possible paths of the api are the following:  
+* `register/`
+* `api/`
+* `calls/`
 
 ## Json Value Return
 This is very important, this is the data you will receive every time you do an api call.  
@@ -147,7 +160,7 @@ Will always contain:
 **Read more about the codes on the CODE_ERRORS.md file**
 
 ## How to send a post request
-The api will always be expecting the same object:
+The `api/` will always be expecting the same object:
 ```json
 {
     "day": "20",
@@ -165,7 +178,7 @@ The api will always be expecting the same object:
 While scheduling, it's really important to know which times are available.  
 Otherwise, you would've been just guessing which times are not fully scheduled yet.  
 Luckily the api takes care of it.  
-Doing a get request to the ***api/*** with the following parameters, returns
+Doing a **get** request to the `api/` with the following parameters, returns
 the times that are already scheduled.  
 **To do a time request, you must first be authenticated**  
 

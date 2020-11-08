@@ -4,7 +4,7 @@ Pass for the admin:
 """
 from django.contrib import admin
 
-from .models import ScheduledDate, Information, User
+from api.models import ScheduledDate, Information, User
 
 
 class InformationInLine(admin.StackedInline):

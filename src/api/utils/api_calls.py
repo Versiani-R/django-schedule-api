@@ -1,7 +1,7 @@
 from django.db.models import F
 
-from ..models import User
-from .exceptions import InvalidApiCall
+from api.models import User
+from api.utils.exceptions import InvalidApiCall
 
 
 def decrease_api_calls(token_id):
