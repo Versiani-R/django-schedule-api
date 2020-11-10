@@ -1,5 +1,5 @@
-# Built-in documentation built by django rest framework and openapi.
-**Note:** This file is the preview of the 'docs/' url.
+Built-in documentation with django-rest-framework and openapi
+
 
 HTTP 200 OK
 Allow: GET, HEAD, OPTIONS
