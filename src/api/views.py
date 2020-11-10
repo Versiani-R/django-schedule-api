@@ -21,16 +21,16 @@ from api.models import ScheduledDate, User
 # from api.spreadsheet import *
 
 
-# TODO: Make a 'buy' to reset function ( the user must buy the credits to reset it's api calls number )
-# TODO: Create a 'logistic way' to convert credits to api calls ( $10 = 10 api calls ? )
-
 def index(request):
     return render(request, 'api/index.html')
 
 
 class RegisterViewSet(ViewSet):
     """
+    list:
     Return the register template.
+
+    create:
     Handle the register.
     """
     def list(self, request, format=None):
@@ -59,7 +59,10 @@ class RegisterViewSet(ViewSet):
 
 class ScheduleApiViewSet(ViewSet):
     """
+    list:
     List all the schedule meetings to the day.
+
+    create:
     Create a new schedule meeting  to the day.
     """
     def validate_basic_information(self, day, month, year, hours, minutes, token_id):
@@ -145,7 +148,10 @@ class ScheduleApiViewSet(ViewSet):
 
 class ApiCallsViewSet(ViewSet):
     """
+    list:
     List  the number of api calls of a certain account
+    
+    create:
     Reset the number of api calls of a certain account
     """
     def list(self, request, pk=None, format=None):
@@ -188,7 +194,7 @@ class ApiCallsViewSet(ViewSet):
         user = User.objects.filter(token_id=serializer.data['token_id']).first()
 
         # This variable is for information purpouses, it's being saved here and not bellow the rest of the code
-        # to only use one call on the database. Same reason why I'm not calling the decrease_api_credits function.
+        # to only use one call on the database. Same reason why I'm not calling the increase_api_credits function.
         api_calls = user.api_calls + int(api_credits)
 
         user.api_calls = F('api_calls') + int(api_credits)
